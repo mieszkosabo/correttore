@@ -1,5 +1,8 @@
+import { ParserWithExtensions } from "../utils";
+import { MinLengthValidator } from "./minLength";
+
 export type EmailValidator = {
-  email: typeof email;
+  email: () => ParserWithExtensions<typeof email, [MinLengthValidator]>;
 };
 
 export const email = () => ({

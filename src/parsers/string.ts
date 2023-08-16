@@ -1,5 +1,5 @@
 import { ParserWithExtensions } from "../utils";
-import { EmailValidator } from "../validations/email";
+import { EmailValidator, MinLengthValidator } from "../validations";
 
 function isString(x: unknown): asserts x is string {
   if (typeof x !== "string") {
@@ -7,7 +7,10 @@ function isString(x: unknown): asserts x is string {
   }
 }
 
-export type StringParser = ParserWithExtensions<string, [EmailValidator]>;
+export type StringParser = ParserWithExtensions<
+  string,
+  [EmailValidator, MinLengthValidator]
+>;
 
 export const string = () => ({
   parse(arg: unknown): string {
