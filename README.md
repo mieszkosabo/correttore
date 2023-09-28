@@ -3,6 +3,8 @@
 A **proof of concept** of a tree shakable [Zod](https://zod.dev/) alternative.
 This library aims to have a 1:1 Zod compatible API, but with fine grain control over the final bundle size.
 
+🤓 You can read the [blog post](https://softwaremill.com/a-novel-technique-for-creating-ergonomic-and-tree-shakable-typescript-libraries/) to learn how it works. 
+
 ## Installation
 
 > **Note:** This library is not production ready, I implemented only a handful of parsers as a PoC.
