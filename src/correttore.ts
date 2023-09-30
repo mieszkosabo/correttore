@@ -2,29 +2,36 @@ import { NumberParser, ObjectParser, StringParser } from "./parsers";
 import { Parser } from "./utils";
 
 const createParserProxy = (
-  p: Parser<any>,
   parsers: Record<string, (...args: any) => Parser<any>>,
   parsersChain: Parser<any>[]
 ) =>
-  new Proxy(p, {
-    get(target, key) {
-      if (key === "parse") {
-        return (arg: any) => {
-          parsersChain.forEach((p) => p.parse(arg));
-          return target.parse(arg);
-        };
-      }
-      if (key in parsers) {
-        return (args: any) =>
-          createParserProxy(parsers[key as any](args), parsers, [
-            ...parsersChain,
-            parsers[key as any](args),
-          ]);
-      } else {
-        throw new Error(`Unknown parser ${key as string}`);
-      }
-    },
-  });
+  new Proxy(
+    {},
+    {
+      get(target, key) {
+        if (key === "parse") {
+          return (arg: any) => {
+            // check if `arg` passes first n - 1 constrains
+            parsersChain
+              .slice(0, parsersChain.length - 1)
+              .forEach((p) => p.parse(arg));
+
+            // return the result of the n-th one (last one)
+            return parsersChain[parsersChain.length - 1].parse(arg);
+          };
+        }
+        if (key in parsers) {
+          return (args: any) =>
+            createParserProxy(parsers, [
+              ...parsersChain,
+              parsers[key as any](args),
+            ]);
+        } else {
+          throw new Error(`Unknown parser ${key as string}`);
+        }
+      },
+    }
+  );
 
 export const initCorrettore = <
   Parsers extends Record<string, (...args: any) => Parser<any>>
@@ -32,12 +39,10 @@ export const initCorrettore = <
   parsers: Parsers
 ): calculateCorrettoreType<keyof Parsers> => {
   return new Proxy({} as calculateCorrettoreType<keyof Parsers>, {
-    get(target, key) {
+    get(_target, key) {
       if (key in parsers) {
         return (args: any) =>
-          createParserProxy(parsers[key as any](args), parsers, [
-            parsers[key as any](args),
-          ]);
+          createParserProxy(parsers, [parsers[key as any](args)]);
       } else {
         throw new Error(`Unknown parser ${key as string}`);
       }
@@ -54,12 +59,25 @@ type FullCorrettore = {
 
 // given the list of imported parsers and validator, calculate a type for the correttore object
 type calculateCorrettoreType<
+  // e.g. "string" | "email" | "object" | "minLength"
   features,
-  parser extends Record<string, (...args: any[]) => any> = FullCorrettore
+  // e.g. string() => { email: ..., parse: ..., minLength: ..., ...}
+  parser extends Record<string, (...args: any[]) => any> = FullCorrettore,
+  // features already used in the current chain, e.g. for `c.string().email()`
+  // this would be "string" | "email".
+  // `never` corresponds to an empty union
+  usedFeatures = never
 > = {
-  [k in Extract<keyof parser, features | "parse">]: k extends "parse"
+  [k in Exclude<
+    Extract<keyof parser, features | "parse">,
+    usedFeatures
+  >]: k extends "parse"
     ? parser[k]
     : (
         ...args: Parameters<parser[k]>
-      ) => calculateCorrettoreType<features, ReturnType<parser[k]>>;
+      ) => calculateCorrettoreType<
+        features,
+        ReturnType<parser[k]>,
+        usedFeatures | k
+      >;
 };
