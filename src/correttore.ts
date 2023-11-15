@@ -16,7 +16,7 @@ const createParserProxy = (
               .slice(0, parsersChain.length - 1)
               .forEach((p) => p.parse(arg));
 
-            // return the result of the n-th one (last one)
+            // return the result of the last one
             return parsersChain[parsersChain.length - 1].parse(arg);
           };
         }
@@ -81,3 +81,148 @@ type calculateCorrettoreType<
         usedFeatures | k
       >;
 };
+
+// --------------
+
+type Validator<type, validatorFn> = (arg: type) => validatorFn;
+
+const stringParser: Validator<unknown, () => string> = (arg) => () => {
+  if (typeof arg !== "string") throw new Error("Not a string!");
+  return arg;
+};
+
+const numberParser: Validator<unknown, () => number> = (arg) => () => {
+  if (typeof arg !== "number") throw new Error("Not a number!");
+  return arg;
+};
+
+const objectParser =
+  (arg: unknown) =>
+  <T, Schema extends Record<string, { parse: (...args: any[]) => T }>>(
+    schema: Schema
+  ) => {
+    // TODO: implement
+    return arg;
+  };
+
+const xxx = objectParser({
+  a: stringParser("aa"),
+  b: numberParser(12),
+});
+
+const emailValidator: Validator<string, () => string> = (arg) => () => {
+  if (!arg.includes("@")) throw new Error("Not an email!");
+  return arg;
+};
+
+const minLengthValidator: Validator<string, (minLength: number) => string> =
+  (arg) => (minLength) => {
+    if (arg.length < minLength) throw new Error("Too short!");
+    return arg;
+  };
+
+const min: Validator<number, (min: number) => number> = (arg) => (min) => {
+  if (arg < min) throw new Error("Too small!");
+  return arg;
+};
+
+type calculateTopLevelCorrettoreType<
+  validators extends Record<string, Validator<any, any>>
+> = {
+  [k in keyof PickByValue<validators, Validator<unknown, any>>]: <
+    Params extends Parameters<ReturnType<validators[k]>>
+  >(
+    ...params: Params
+  ) => calculateNestedCorrettoreType<
+    ReturnType<ReturnType<validators[k]>>,
+    PickByValue<
+      validators,
+      Validator<ReturnType<ReturnType<validators[k]>>, any>
+    >
+  >;
+};
+
+type calculateNestedCorrettoreType<
+  CurrentParserType,
+  validators extends Record<string, Validator<any, any>>,
+  usedFeatures = never
+> = {
+  [k in
+    | Exclude<
+        keyof OmitByValue<validators, Validator<unknown, any>>,
+        usedFeatures
+      >
+    | "parse"]: k extends "parse"
+    ? (arg: unknown) => CurrentParserType
+    : k extends keyof validators
+    ? (
+        ...params: Parameters<ReturnType<validators[k]>>
+      ) => calculateNestedCorrettoreType<
+        ReturnType<ReturnType<validators[k]>>,
+        PickByValue<
+          validators,
+          Validator<ReturnType<ReturnType<validators[k]>>, any>
+        >,
+        usedFeatures | k
+      >
+    : never;
+};
+
+let test: calculateTopLevelCorrettoreType<{
+  object: typeof objectParser;
+  string: typeof stringParser;
+  number: typeof numberParser;
+  email: typeof emailValidator;
+  minLength: typeof minLengthValidator;
+  min: typeof min;
+}>;
+
+type x = ReturnType<typeof test.string>;
+
+const a = test.string().email().minLength(1).parse("aa");
+
+const b = test.object({
+  a: test.string().email().minLength(1),
+  b: test.number().min(1),
+});
+
+// type valids = {
+//   email: typeof emailValidator;
+//   minLength: typeof minLengthValidator;
+//   min: typeof min;
+// };
+
+// type aaa = PickByValue<valids, Validator<ReturnType<valids[""]>, any>>
+
+const aa = {
+  a: 1,
+  b: () => 42,
+  c: 3,
+} as const;
+
+type AA = ValueOf<typeof aa>;
+
+// test.number().
+
+type Entries<Obj> = ValueOf<{
+  [Key in keyof Obj]: [Key, Obj[Key]];
+}>;
+
+type ValueOf<T> = T[keyof T];
+
+type FromEntries<Entries extends [any, any]> = {
+  [Val in Entries as Val[0]]: Val[1];
+};
+
+type PickByValue<Obj, Condition> = FromEntries<
+  Extract<Entries<Obj>, [any, Condition]>
+>;
+
+type OmitByValue<T, Omitted> = FromEntries<Exclude<Entries<T>, [any, Omitted]>>;
+
+type Identity<T> = T;
+type somegen = <T>(x: T) => T;
+
+type Zzz = ReturnType<somegen>;
+
+const ss: somegen = (x: string) => x;
