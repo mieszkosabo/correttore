@@ -3,7 +3,49 @@
 A **proof of concept** of a tree shakable [Zod](https://zod.dev/) alternative.
 This library aims to have a 1:1 Zod compatible API, but with fine grain control over the final bundle size.
 
-🤓 You can read the [blog post](https://softwaremill.com/a-novel-technique-for-creating-ergonomic-and-tree-shakable-typescript-libraries/) to learn how it works. 
+🤓 You can read the [blog post](https://softwaremill.com/a-novel-technique-for-creating-ergonomic-and-tree-shakable-typescript-libraries/) to learn how it works.
+
+## Usage
+
+```ts
+// 1. import `initCorrettore` and features (validator) you want to use
+import { initCorrettore, string, email, minLength } from "correttore"; // 0.54 kB
+
+// 2. init the entrypoint variable `c`. It corresponds to Zod's `z`.
+export const c = initCorrettore({
+  string,
+  email,
+  minLength,
+});
+
+// 3. create schemas. Autocompletion will only show methods passed to `initCorrettore`.
+// the `object` method is always available
+const loginSchema = c.object({
+  email: c.string().email(),
+  password: c.string().minLength(5),
+});
+
+// 4. Infer type from schema:
+import type { Infer } from "correttore";
+
+type LoginSchema = Infer<typeof loginSchema>;
+//   ^? {
+//       email: string;
+//       password: string;
+//     }
+
+// 5. Parse unknown data
+const parsed = loginSchema.parse({
+  email: "hello@test.com",
+  password: "password123",
+});
+
+// this will throw
+loginSchema.parse({
+  email: "hello@test.com",
+  // missing field
+});
+```
 
 ## Installation
 
@@ -39,12 +81,11 @@ LoginSchema.parse({ email: "jane@example.com", password: "12345678" });
 ### Correttore:
 
 ```ts
-import { email, minLength, object, initCorrettore, string } from "correttore"; // 0.54 kB
+import { email, minLength, initCorrettore, string } from "correttore"; // 0.54 kB
 
 export const c = initCorrettore({
   string,
   email,
-  object,
   minLength,
 });
 
@@ -68,4 +109,3 @@ List of stuff to do:
 
 - [ ] Add more parsers/validators
 - [ ] Add tests
-- [ ] Add the `Infer` type
