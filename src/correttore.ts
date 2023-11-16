@@ -1,9 +1,33 @@
-import { NumberParser, ObjectParser, StringParser } from "./parsers";
-import { Parser } from "./utils";
+import {
+  AnyFunction,
+  OmitByValue,
+  Parser,
+  PickByValue,
+  Validator,
+  ValidatorFn,
+} from "./util-types";
+
+const object =
+  <T, Schema extends Record<string, Parser<T>>>(schema: Schema) =>
+  (arg: unknown) => {
+    if (typeof arg !== "object" || arg === null || Array.isArray(arg)) {
+      throw new Error(`${arg} is not an object.`);
+    }
+
+    for (const k of Object.keys(schema)) {
+      if (k in arg) {
+        schema[k].parse((arg as any)[k]);
+      } else {
+        throw new Error(`Missing property ${k}`);
+      }
+    }
+
+    return arg;
+  };
 
 const createParserProxy = (
-  parsers: Record<string, (...args: any) => Parser<any>>,
-  parsersChain: Parser<any>[]
+  parsers: Record<string, (...args: any) => ValidatorFn>,
+  parsersChain: ValidatorFn[]
 ) =>
   new Proxy(
     {},
@@ -14,10 +38,10 @@ const createParserProxy = (
             // check if `arg` passes first n - 1 constrains
             parsersChain
               .slice(0, parsersChain.length - 1)
-              .forEach((p) => p.parse(arg));
+              .forEach((p) => p(arg));
 
             // return the result of the last one
-            return parsersChain[parsersChain.length - 1].parse(arg);
+            return parsersChain[parsersChain.length - 1](arg);
           };
         }
         if (key in parsers) {
@@ -34,12 +58,17 @@ const createParserProxy = (
   );
 
 export const initCorrettore = <
-  Parsers extends Record<string, (...args: any) => Parser<any>>
+  validators extends Record<string, Validator<any, any, any>>
 >(
-  parsers: Parsers
-): calculateCorrettoreType<keyof Parsers> => {
-  return new Proxy({} as calculateCorrettoreType<keyof Parsers>, {
+  parsers: validators
+): calculateTopLevelCorrettoreType<validators> => {
+  return new Proxy({} as calculateTopLevelCorrettoreType<validators>, {
     get(_target, key) {
+      // `object` is always available
+      if (key === "object") {
+        return (schema: any) => createParserProxy(parsers, [object(schema)]);
+      }
+
       if (key in parsers) {
         return (args: any) =>
           createParserProxy(parsers, [parsers[key as any](args)]);
@@ -50,96 +79,32 @@ export const initCorrettore = <
   });
 };
 
-// Full correttore type with all parsers and extensions
-type FullCorrettore = {
-  string: () => StringParser;
-  number: () => NumberParser;
-  object: <S extends Record<string, Parser<any>>>(schema: S) => ObjectParser<S>;
-};
-
-// given the list of imported parsers and validator, calculate a type for the correttore object
-type calculateCorrettoreType<
-  // e.g. "string" | "email" | "object" | "minLength"
-  features,
-  // e.g. string() => { email: ..., parse: ..., minLength: ..., ...}
-  parser extends Record<string, (...args: any[]) => any> = FullCorrettore,
-  // features already used in the current chain, e.g. for `c.string().email()`
-  // this would be "string" | "email".
-  // `never` corresponds to an empty union
-  usedFeatures = never
-> = {
-  [k in Exclude<
-    Extract<keyof parser, features | "parse">,
-    usedFeatures
-  >]: k extends "parse"
-    ? parser[k]
-    : (
-        ...args: Parameters<parser[k]>
-      ) => calculateCorrettoreType<
-        features,
-        ReturnType<parser[k]>,
-        usedFeatures | k
-      >;
-};
-
-// --------------
-
-type Validator<type, validatorFn> = (arg: type) => validatorFn;
-
-const stringParser: Validator<unknown, () => string> = (arg) => () => {
-  if (typeof arg !== "string") throw new Error("Not a string!");
-  return arg;
-};
-
-const numberParser: Validator<unknown, () => number> = (arg) => () => {
-  if (typeof arg !== "number") throw new Error("Not a number!");
-  return arg;
-};
-
-const objectParser =
-  (arg: unknown) =>
-  <T, Schema extends Record<string, { parse: (...args: any[]) => T }>>(
-    schema: Schema
-  ) => {
-    // TODO: implement
-    return arg;
+type calculateObjectType<Params extends any[]> = {
+  parse: (arg: unknown) => {
+    [schemaField in keyof Params[0]]: "parse" extends keyof Params[0][schemaField]
+      ? Params[0][schemaField]["parse"] extends AnyFunction
+        ? ReturnType<Params[0][schemaField]["parse"]>
+        : never
+      : never;
   };
-
-const xxx = objectParser({
-  a: stringParser("aa"),
-  b: numberParser(12),
-});
-
-const emailValidator: Validator<string, () => string> = (arg) => () => {
-  if (!arg.includes("@")) throw new Error("Not an email!");
-  return arg;
-};
-
-const minLengthValidator: Validator<string, (minLength: number) => string> =
-  (arg) => (minLength) => {
-    if (arg.length < minLength) throw new Error("Too short!");
-    return arg;
-  };
-
-const min: Validator<number, (min: number) => number> = (arg) => (min) => {
-  if (arg < min) throw new Error("Too small!");
-  return arg;
 };
 
 type calculateTopLevelCorrettoreType<
   validators extends Record<string, Validator<any, any>>
 > = {
-  [k in keyof PickByValue<validators, Validator<unknown, any>>]: <
-    Params extends Parameters<ReturnType<validators[k]>>
+  [k in keyof PickByValue<validators, Validator<unknown, any>> | "object"]: <
+    Params extends any[]
   >(
     ...params: Params
-  ) => calculateNestedCorrettoreType<
-    ReturnType<ReturnType<validators[k]>>,
-    PickByValue<
-      validators,
-      Validator<ReturnType<ReturnType<validators[k]>>, any>
-    >
-  >;
+  ) => k extends "object"
+    ? calculateObjectType<Params>
+    : calculateNestedCorrettoreType<
+        ReturnType<ReturnType<validators[k]>>,
+        PickByValue<
+          validators,
+          Validator<ReturnType<ReturnType<validators[k]>>, any, any>
+        >
+      >;
 };
 
 type calculateNestedCorrettoreType<
@@ -156,73 +121,14 @@ type calculateNestedCorrettoreType<
     ? (arg: unknown) => CurrentParserType
     : k extends keyof validators
     ? (
-        ...params: Parameters<ReturnType<validators[k]>>
+        ...params: Parameters<validators[k]>
       ) => calculateNestedCorrettoreType<
         ReturnType<ReturnType<validators[k]>>,
         PickByValue<
           validators,
-          Validator<ReturnType<ReturnType<validators[k]>>, any>
+          Validator<ReturnType<ReturnType<validators[k]>>, any, any>
         >,
         usedFeatures | k
       >
     : never;
 };
-
-let test: calculateTopLevelCorrettoreType<{
-  object: typeof objectParser;
-  string: typeof stringParser;
-  number: typeof numberParser;
-  email: typeof emailValidator;
-  minLength: typeof minLengthValidator;
-  min: typeof min;
-}>;
-
-type x = ReturnType<typeof test.string>;
-
-const a = test.string().email().minLength(1).parse("aa");
-
-const b = test.object({
-  a: test.string().email().minLength(1),
-  b: test.number().min(1),
-});
-
-// type valids = {
-//   email: typeof emailValidator;
-//   minLength: typeof minLengthValidator;
-//   min: typeof min;
-// };
-
-// type aaa = PickByValue<valids, Validator<ReturnType<valids[""]>, any>>
-
-const aa = {
-  a: 1,
-  b: () => 42,
-  c: 3,
-} as const;
-
-type AA = ValueOf<typeof aa>;
-
-// test.number().
-
-type Entries<Obj> = ValueOf<{
-  [Key in keyof Obj]: [Key, Obj[Key]];
-}>;
-
-type ValueOf<T> = T[keyof T];
-
-type FromEntries<Entries extends [any, any]> = {
-  [Val in Entries as Val[0]]: Val[1];
-};
-
-type PickByValue<Obj, Condition> = FromEntries<
-  Extract<Entries<Obj>, [any, Condition]>
->;
-
-type OmitByValue<T, Omitted> = FromEntries<Exclude<Entries<T>, [any, Omitted]>>;
-
-type Identity<T> = T;
-type somegen = <T>(x: T) => T;
-
-type Zzz = ReturnType<somegen>;
-
-const ss: somegen = (x: string) => x;
