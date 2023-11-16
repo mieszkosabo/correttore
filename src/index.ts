@@ -1,3 +1,3 @@
 export { initCorrettore } from "./correttore";
-export * from "./parsers";
-export * from "./validations";
+export type { Validator, Infer } from "./util-types";
+export * from "./validators";
