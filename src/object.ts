@@ -3,7 +3,7 @@ import { Validator } from "./shared.types";
 
 interface ObjectSchema extends Fn {
   return: {
-    [K in keyof this["arg0"]]: this["arg0"][K]["$outputType"];
+    [K in keyof this["arg1"]]: this["arg1"][K]["$outputType"];
   };
 }
 

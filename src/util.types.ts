@@ -15,3 +15,5 @@ export type PickByValue<Obj, Condition> = FromEntries<
 export type OmitByValue<T, Omitted> = FromEntries<
   Exclude<Entries<T>, [any, Omitted]>
 >;
+
+export type AnyFunReturning<T> = (...args: any) => T;

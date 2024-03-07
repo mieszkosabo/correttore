@@ -1,5 +1,5 @@
 import { Apply, Fn } from "hotscript";
-import { PickByValue } from "./util.types";
+import { AnyFunReturning, PickByValue } from "./util.types";
 import { Validator } from "./shared.types";
 
 type GetChainableValidators<
@@ -18,12 +18,15 @@ type GetChainableValidators<
       ) => Omit<ReturnType<Validators[K]>, "parse" | "$outputType"> &
         GetChainableValidators<
           ReturnType<Validators[K]>["$outputType"] extends Fn
-            ? Apply<ReturnType<Validators[K]>["$outputType"], Ps>
+            ? Apply<
+                ReturnType<Validators[K]>["$outputType"],
+                [OutputType, ...Ps]
+              >
             : ReturnType<Validators[K]>["$outputType"],
           Validators,
           usedFeatures | K
         > & {
-          // we annotate `parse` function to accept args that make sense, for example `minLength` will
+          // we annotate `parse` function to accept args that make sense, for example `min` will
           // except the arg to be string, not unknown, because we know it can only be used
           // in a parsers chain after `string()`.
           // however we need to substitute that arg with `unknown` for the library consumer,
@@ -31,18 +34,34 @@ type GetChainableValidators<
           parse: (
             arg: unknown
           ) => ReturnType<Validators[K]>["$outputType"] extends Fn
-            ? Apply<ReturnType<Validators[K]>["$outputType"], Ps>
+            ? Apply<
+                ReturnType<Validators[K]>["$outputType"],
+                [OutputType, ...Ps]
+              >
             : ReturnType<Validators[K]>["$outputType"];
           // We also need to update the $outputType, so that if it's a type-level function, we call it
           // with the passed parameters, and if it's a type, we just return it.
           $outputType: ReturnType<Validators[K]>["$outputType"] extends Fn
-            ? Apply<ReturnType<Validators[K]>["$outputType"], Ps>
+            ? Apply<
+                ReturnType<Validators[K]>["$outputType"],
+                [OutputType, ...Ps]
+              >
             : ReturnType<Validators[K]>["$outputType"];
         }
     : never;
 };
 
-export type AnyFunReturning<T> = (...args: any) => T;
+const doesExtend = (A: string, B: string) => {
+  if (A === B) {
+    return true;
+  }
+
+  if (B === "any") {
+    return true;
+  }
+
+  return false;
+};
 
 const createParserProxy = (
   validators: AnyFunReturning<Validator<any, any>>[],
@@ -64,19 +83,26 @@ const createParserProxy = (
             return validatorsChain[validatorsChain.length - 1].parse(arg);
           };
         }
-        const applicableValidators = validators.filter(
-          (v) => v().$inputType === outputType
+        const applicableValidators = validators.filter((v) =>
+          doesExtend(outputType, v().$inputType)
         );
         const validatorIdx = applicableValidators.findIndex(
           (v) => v().name === key
         );
+
         if (validatorIdx !== -1) {
-          return (args: any) =>
-            createParserProxy(
+          return (args: any) => {
+            const validator = applicableValidators[validatorIdx](args);
+            const chain = validator.processChain
+              ? validator.processChain(validatorsChain.at(-1) ?? null)
+              : validatorsChain;
+
+            return createParserProxy(
               validators,
-              [...validatorsChain, applicableValidators[validatorIdx](args)],
+              [...chain, validator],
               applicableValidators[validatorIdx](args).$outputType
             );
+          };
         } else {
           throw new Error(`Unknown parser ${key as string}`);
         }
@@ -93,8 +119,8 @@ export const initCorrettore = <
   return new Proxy({} as GetChainableValidators<unknown, Validators>, {
     get(_target, key) {
       // the base validators (ones that can be used from `c` variable) take "unknown" as their input
-      const applicableValidators = validators.filter(
-        (v) => v().$inputType === "unknown"
+      const applicableValidators = validators.filter((v) =>
+        doesExtend("unknown", v().$inputType)
       );
       const validatorIdx = applicableValidators.findIndex(
         (v) => v().name === key

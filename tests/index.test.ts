@@ -9,9 +9,27 @@ import {
   object,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
+import {
+  array,
+  nonEmpty,
+  min as arrayMin,
+  max as arrayMax,
+  length,
+} from "../src/arrays";
 
 describe("basic tests", () => {
-  const c = initCorrettore([string, min, number, email, object]);
+  const c = initCorrettore([
+    string,
+    min,
+    number,
+    email,
+    object,
+    array,
+    nonEmpty,
+    arrayMin,
+    arrayMax,
+    length,
+  ]);
 
   test("smoke tests", () => {
     expect(() => c.number().parse(42)).not.toThrow();
@@ -62,5 +80,66 @@ describe("basic tests", () => {
         }
       >
     >;
+  });
+
+  test("arrays", () => {
+    expect(() => c.array(c.string().min(2)).parse(["ab", "ba"])).not.toThrow();
+    expect(() => c.array(c.string()).parse([])).not.toThrow();
+    expect(() => c.array(c.string()).parse([42])).toThrow();
+    expect(() =>
+      c.array(c.string()).nonEmpty().parse(["a", "b"])
+    ).not.toThrow();
+    expect(() => c.array(c.string()).nonEmpty().parse([])).toThrow();
+    expect(() =>
+      c
+        .array(c.string())
+        .nonEmpty()
+        .min(3)
+        .max(5)
+        .length(4)
+        .parse(["a", "b", "c", "d"])
+    ).not.toThrow();
+    expect(() =>
+      c
+        .array(c.string())
+        .nonEmpty()
+        .min(3)
+        .max(5)
+        .length(4)
+        .parse(["a", "b", "d"])
+    ).toThrow();
+  });
+
+  test("arrays alternative syntax", () => {
+    expect(() => c.string().min(2).array().parse(["ab", "ba"])).not.toThrow();
+    expect(() => c.string().array().parse([])).not.toThrow();
+    expect(() => c.string().array().parse([42])).toThrow();
+    expect(() => c.string().array().nonEmpty().parse(["a", "b"])).not.toThrow();
+    expect(() => c.string().array().nonEmpty().parse([])).toThrow();
+    expect(() =>
+      c
+        .string()
+        .array()
+        .nonEmpty()
+        .min(3)
+        .max(5)
+        .length(4)
+        .parse(["a", "b", "c", "d"])
+    ).not.toThrow();
+    expect(() =>
+      c
+        .string()
+        .array()
+        .nonEmpty()
+        .min(3)
+        .max(5)
+        .length(4)
+        .parse(["a", "b", "d"])
+    ).toThrow();
+  });
+
+  test("array element", () => {
+    const arrSchema = c.array(c.string().min(2));
+    const el = arrSchema.element;
   });
 });

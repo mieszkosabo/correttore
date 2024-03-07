@@ -5,3 +5,4 @@ export * from "./numbers";
 export * as bigint from "./bigint";
 export * from "./strings";
 export * from "./object";
+export * as arrays from "./arrays";

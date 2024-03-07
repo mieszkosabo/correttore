@@ -2,6 +2,7 @@ export type Validator<Input, Output> = {
   name: string;
   $inputType: Input;
   $outputType: Output;
+  processChain?: (chain: Validator<any, any> | null) => Validator<any, any>[];
   parse: (arg: Input) => Output;
 };
 
