@@ -80,6 +80,14 @@ describe("basic tests", () => {
         }
       >
     >;
+
+    const schema2 = c.array(c.string().email()).max(4).nonEmpty();
+    type InferredSchema2 = Infer<typeof schema2>;
+    type typeTest2 = Expect<Equal<InferredSchema2, [string, ...string[]]>>;
+
+    const schema3 = c.string().email().array().max(4).nonEmpty();
+    type InferredSchema3 = Infer<typeof schema3>;
+    type typeTest3 = Expect<Equal<InferredSchema3, [string, ...string[]]>>;
   });
 
   test("arrays", () => {

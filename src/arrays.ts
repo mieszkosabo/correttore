@@ -2,7 +2,11 @@ import { Fn } from "hotscript";
 import { Validator } from "./shared.types";
 
 interface ArrayType extends Fn {
-  return: Array<this["arg0"]>;
+  return: this["args"] extends [...any, infer last]
+    ? last extends { $outputType: infer OT }
+      ? Array<OT>
+      : Array<last>
+    : never;
 }
 
 export const array = (innerValidator?: Validator<any, any>) => {
