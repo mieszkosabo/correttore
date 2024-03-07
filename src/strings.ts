@@ -1,6 +1,6 @@
 export const max = (maxLength: number) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "max" as const,
   parse: (arg: string) => {
     if (arg.length > maxLength)
@@ -10,8 +10,8 @@ export const max = (maxLength: number) => ({
 });
 
 export const min = (minLength: number) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "min" as const,
   parse: (arg: string) => {
     if (arg.length < minLength)
@@ -21,8 +21,8 @@ export const min = (minLength: number) => ({
 });
 
 export const length = (exactLength: number) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "length" as const,
   parse: (arg: string) => {
     if (arg.length !== exactLength)
@@ -34,8 +34,8 @@ export const length = (exactLength: number) => ({
 });
 
 export const email = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "email" as const,
   parse: (arg: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,8 +45,8 @@ export const email = () => ({
 });
 
 export const url = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "url" as const,
   parse: (arg: string) => {
     try {
@@ -59,8 +59,8 @@ export const url = () => ({
 });
 
 export const emoji = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "emoji" as const,
   parse: (arg: string) => {
     const emojiRegex = /[\p{Emoji}]/u;
@@ -71,8 +71,8 @@ export const emoji = () => ({
 });
 
 export const uuid = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "uuid" as const,
   parse: (arg: string) => {
     const uuidRegex = /^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$/i;
@@ -82,8 +82,8 @@ export const uuid = () => ({
 });
 
 export const cuid = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "cuid" as const,
   parse: (arg: string) => {
     const cuidRegex = /^[a-z\d]{24}$/i;
@@ -93,8 +93,8 @@ export const cuid = () => ({
 });
 
 export const cuid2 = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "cuid2" as const,
   parse: (arg: string) => {
     const cuid2Regex = /^[a-z\d]{25}$/i;
@@ -104,8 +104,8 @@ export const cuid2 = () => ({
 });
 
 export const ulid = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "ulid" as const,
   parse: (arg: string) => {
     const ulidRegex = /^[0-9A-Z]{26}$/;
@@ -115,8 +115,8 @@ export const ulid = () => ({
 });
 
 export const regex = (pattern: RegExp) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "regex" as const,
   parse: (arg: string) => {
     if (!pattern.test(arg))
@@ -126,8 +126,8 @@ export const regex = (pattern: RegExp) => ({
 });
 
 export const includes = (substring: string) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "includes" as const,
   parse: (arg: string) => {
     if (!arg.includes(substring))
@@ -137,8 +137,8 @@ export const includes = (substring: string) => ({
 });
 
 export const startsWith = (prefix: string) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "startsWith" as const,
   parse: (arg: string) => {
     if (!arg.startsWith(prefix))
@@ -148,8 +148,8 @@ export const startsWith = (prefix: string) => ({
 });
 
 export const endsWith = (suffix: string) => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "endsWith" as const,
   parse: (arg: string) => {
     if (!arg.endsWith(suffix))
@@ -159,8 +159,8 @@ export const endsWith = (suffix: string) => ({
 });
 
 export const datetime = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "datetime" as const,
   parse: (arg: string) => {
     const dateObject = new Date(arg);
@@ -171,8 +171,8 @@ export const datetime = () => ({
 });
 
 export const ip = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "ip" as const,
   parse: (arg: string) => {
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -183,22 +183,22 @@ export const ip = () => ({
 });
 
 export const trim = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "trim" as const,
   parse: (arg: string) => arg.trim(),
 });
 
 export const toLowerCase = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "toLowerCase" as const,
   parse: (arg: string) => arg.toLowerCase(),
 });
 
 export const toUpperCase = () => ({
-  $inputType: null as unknown as string,
-  $outputType: null as unknown as string,
+  $inputType: "string" as unknown as string,
+  $outputType: "string" as unknown as string,
   name: "toUpperCase" as const,
   parse: (arg: string) => arg.toUpperCase(),
 });

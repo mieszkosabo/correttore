@@ -1,3 +1,7 @@
 export { initCorrettore } from "./correttore";
-export type { Validator, Infer } from "./util-types";
-export * from "./validators";
+export type { Validator, Infer } from "./shared.types";
+export * from "./primitives";
+export * from "./numbers";
+export * as bigint from "./bigint";
+export * from "./strings";
+export * from "./object";

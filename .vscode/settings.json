@@ -1,3 +1,4 @@
 {
-  "cSpell.words": ["Correttore"]
+  "cSpell.words": ["Correttore"],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

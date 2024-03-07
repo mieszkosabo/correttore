@@ -2,20 +2,16 @@ import { describe, expect, test } from "bun:test";
 import {
   initCorrettore,
   string,
-  minLength,
+  min,
   number,
   email,
   Infer,
+  object,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 
 describe("basic tests", () => {
-  const c = initCorrettore({
-    string,
-    minLength,
-    number,
-    email,
-  });
+  const c = initCorrettore([string, min, number, email, object]);
 
   test("smoke tests", () => {
     expect(() => c.number().parse(42)).not.toThrow();
@@ -34,18 +30,9 @@ describe("basic tests", () => {
         })
     ).not.toThrow();
   });
-  const aa = c
-    .object({
-      a: c.string(),
-      b: c.number(),
-    })
-    .parse({
-      a: "hello",
-      b: 42,
-    });
 
   test("all conditions in a chain are checked", () => {
-    const schema = c.string().email().minLength(5);
+    const schema = c.string().email().min(5);
     expect(() => schema.parse("aaa@a.pl")).not.toThrow();
     expect(() => schema.parse("aaapl.com")).toThrow();
     expect(() => schema.parse("a@e")).toThrow();
@@ -54,7 +41,7 @@ describe("basic tests", () => {
 
   test("types", () => {
     const schema = c.object({
-      a: c.string().email().minLength(2),
+      a: c.string().email().min(2),
       b: c.number(),
       c: c.object({
         d: c.string(),
@@ -67,10 +54,10 @@ describe("basic tests", () => {
       Equal<
         InferredSchema,
         {
-          a: string;
-          b: number;
-          c: {
-            d: string;
+          readonly a: string;
+          readonly b: number;
+          readonly c: {
+            readonly d: string;
           };
         }
       >
