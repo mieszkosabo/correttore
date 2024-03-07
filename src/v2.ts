@@ -1,23 +1,28 @@
+import { Apply, Fn } from "hotscript";
 import { gte, lte } from "./numbers";
 import { number, string } from "./primitives";
 import { email, max, min } from "./strings";
 import { PickByValue } from "./util-types";
 
-type Validator<Input, Output> = {
+export type Validator<Input, Output> = {
   name: string;
   $inputType: Input;
   $outputType: Output;
   parse: (arg: Input) => Output;
 };
 
+interface ObjectSchema extends Fn {
+  return: {
+    [K in keyof this["arg0"]]: this["arg0"][K]["$outputType"];
+  };
+}
+
 const object = <const Schema extends Record<string, Validator<any, any>>>(
   schema: Schema
 ) => ({
   name: "object" as const,
   $inputType: null as unknown,
-  $outputType: null as unknown as {
-    [K in keyof Schema]: Schema[K]["$outputType"];
-  },
+  $outputType: null as unknown as ObjectSchema,
   parse: (arg: unknown) => {
     if (typeof arg !== "object" || arg === null || Array.isArray(arg)) {
       throw new Error(`${arg} is not an object.`);
@@ -31,9 +36,7 @@ const object = <const Schema extends Record<string, Validator<any, any>>>(
       }
     }
 
-    return arg as {
-      [K in keyof Schema]: Schema[K]["$outputType"];
-    };
+    return arg;
   },
 });
 
@@ -50,12 +53,13 @@ type GetChainableValidators<
   > as K extends keyof Validators
     ? ReturnType<Validators[K]>["name"]
     : ""]: K extends keyof Validators
-    ? (...params: Parameters<Validators[K]>) => Omit<
-        ReturnType<Validators[K]>,
-        "parse"
-      > &
+    ? <const Ps extends Parameters<Validators[K]>>(
+        ...params: Ps
+      ) => Omit<ReturnType<Validators[K]>, "parse" | "$outputType"> &
         GetChainableValidators<
-          ReturnType<Validators[K]>["$outputType"],
+          ReturnType<Validators[K]>["$outputType"] extends Fn
+            ? Apply<ReturnType<Validators[K]>["$outputType"], Ps>
+            : ReturnType<Validators[K]>["$outputType"],
           Validators,
           usedFeatures | K
         > & {
@@ -64,12 +68,19 @@ type GetChainableValidators<
           // in a parsers chain after `string()`.
           // however we need to substitute that arg with `unknown` for the library consumer,
           // because in their context they should be able to start the chain with any type.
-          parse: (arg: unknown) => ReturnType<Validators[K]>["$outputType"];
+          parse: (
+            arg: unknown
+          ) => ReturnType<Validators[K]>["$outputType"] extends Fn
+            ? Apply<ReturnType<Validators[K]>["$outputType"], Ps>
+            : ReturnType<Validators[K]>["$outputType"];
+          $outputType: ReturnType<Validators[K]>["$outputType"] extends Fn
+            ? Apply<ReturnType<Validators[K]>["$outputType"], Ps>
+            : ReturnType<Validators[K]>["$outputType"];
         }
     : never;
 };
 
-type AnyFunReturning<T> = (...args: any) => T;
+export type AnyFunReturning<T> = (...args: any) => T;
 
 const createParserProxy = (
   validators: AnyFunReturning<Validator<any, any>>[],
@@ -124,19 +135,42 @@ export const initCorrettore = <
   });
 };
 
-const c = initCorrettore([object, string, number, email, gte, lte, max, min]);
+interface Yo extends Fn {
+  return: `yo ${this["arg0"]}`;
+}
 
-// TODO: hardcode `object` or sth
-const aa = object({
+const yo = <T>(hello: T) => ({
+  name: "yo" as const,
+  $inputType: null as unknown as unknown,
+  $outputType: null as unknown as Yo,
+  parse: (arg: T) => arg,
+});
+
+const c = initCorrettore([
+  object,
+  string,
+  number,
+  email,
+  gte,
+  lte,
+  max,
+  min,
+  yo,
+]);
+
+const aa = c.object({
   name: c.string().min(3).max(5),
   age: c.number().gte(10).lte(20),
   email: c.string().email(),
 });
 
-type xx = Infer<typeof aa>;
+type tta = Infer<typeof aa>;
 
-aa.parse({
-  name: "abc",
-  age: 15,
-  email: "hello@example.com",
-});
+const zxc = aa.parse({});
+
+const bb = c.string().min(3).max(5).parse("hello");
+
+const ccc = c.yo("man!");
+const cc = c.yo("man!").parse("hello");
+
+type tt = Infer<typeof ccc>;
