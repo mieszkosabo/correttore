@@ -7,6 +7,7 @@ import {
   email,
   Infer,
   object,
+  nullable,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 import {
@@ -29,6 +30,7 @@ describe("basic tests", () => {
     arrayMin,
     arrayMax,
     length,
+    nullable,
   ]);
 
   test("smoke tests", () => {
@@ -116,6 +118,10 @@ describe("basic tests", () => {
         .length(4)
         .parse(["a", "b", "d"])
     ).toThrow();
+
+    const schema = c.array(c.string());
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string[]>>;
   });
 
   test("arrays alternative syntax", () => {
@@ -144,10 +150,26 @@ describe("basic tests", () => {
         .length(4)
         .parse(["a", "b", "d"])
     ).toThrow();
+
+    const schema = c.string().array();
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string[]>>;
   });
 
-  test("array element", () => {
-    const arrSchema = c.array(c.string().min(2));
-    const el = arrSchema.element;
+  test("nullable", () => {
+    const schema = c.string().nullable();
+    expect(() => schema.parse("hello")).not.toThrow();
+    expect(() => schema.parse(null)).not.toThrow();
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string | null>>;
+  });
+
+  test("nullable alt syntax", () => {
+    const schema = c.nullable(c.string());
+    expect(() => schema.parse("hello")).not.toThrow();
+    expect(() => schema.parse(null)).not.toThrow();
+
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string | null>>;
   });
 });

@@ -15,7 +15,6 @@ export const array = (innerValidator?: Validator<any, any>) => {
   } satisfies { chain: Validator<any, any> | null };
   return {
     name: "array" as const,
-    element: ctx.chain as Validator<any, any>,
     $inputType: "any" as unknown as any,
     $outputType: "array" as unknown as ArrayType,
     processChain: (chain: Validator<any, any> | null) => {

@@ -63,6 +63,17 @@ const doesExtend = (A: string, B: string) => {
   return false;
 };
 
+const callIfFun = (
+  maybeFn: string | AnyFunReturning<string>,
+  arg: any
+): string => {
+  if (typeof maybeFn === "function") {
+    return maybeFn(arg);
+  } else {
+    return maybeFn;
+  }
+};
+
 const createParserProxy = (
   validators: AnyFunReturning<Validator<any, any>>[],
   validatorsChain: Validator<any, any>[],
@@ -100,7 +111,10 @@ const createParserProxy = (
             return createParserProxy(
               validators,
               [...chain, validator],
-              applicableValidators[validatorIdx](args).$outputType
+              callIfFun(
+                applicableValidators[validatorIdx](args).$outputType,
+                outputType
+              )
             );
           };
         } else {
