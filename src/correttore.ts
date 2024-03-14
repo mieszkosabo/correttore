@@ -134,7 +134,7 @@ export const initCorrettore = <
     get(_target, key) {
       // the base validators (ones that can be used from `c` variable) take "unknown" as their input
       const applicableValidators = validators.filter((v) =>
-        doesExtend("unknown", v().$inputType)
+        doesExtend("root", v().$inputType)
       );
       const validatorIdx = applicableValidators.findIndex(
         (v) => v().name === key

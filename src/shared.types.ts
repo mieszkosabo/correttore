@@ -7,3 +7,12 @@ export type Validator<Input, Output> = {
 };
 
 export type Infer<Schema extends Validator<any, any>> = Schema["$outputType"];
+
+export type Primitive =
+  | string
+  | number
+  | bigint
+  | boolean
+  | symbol
+  | null
+  | undefined;

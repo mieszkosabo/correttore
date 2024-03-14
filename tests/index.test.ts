@@ -17,6 +17,7 @@ import {
   max as arrayMax,
   length,
 } from "../src/arrays";
+import { literal } from "../src/literal";
 
 describe("basic tests", () => {
   const c = initCorrettore([
@@ -31,6 +32,7 @@ describe("basic tests", () => {
     arrayMax,
     length,
     nullable,
+    literal,
   ]);
 
   test("smoke tests", () => {
@@ -171,5 +173,21 @@ describe("basic tests", () => {
 
     type SchemaType = Infer<typeof schema>;
     type test = Expect<Equal<SchemaType, string | null>>;
+  });
+
+  test("literal", () => {
+    const schema = c.literal("howdy");
+    expect(() => schema.parse("howdy")).not.toThrow();
+    expect(() => schema.parse("anything else")).not.toThrow();
+
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, "howdy">>;
+
+    const schema2 = c.literal(42);
+    expect(() => schema2.parse(42)).not.toThrow();
+    expect(() => schema2.parse("anything else")).not.toThrow();
+
+    type SchemaType2 = Infer<typeof schema2>;
+    type test2 = Expect<Equal<SchemaType2, 42>>;
   });
 });
