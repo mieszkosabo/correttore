@@ -13,41 +13,59 @@ type GetChainableValidators<
   > as K extends keyof Validators
     ? ReturnType<Validators[K]>["name"]
     : ""]: K extends keyof Validators
-    ? <const Ps extends Parameters<Validators[K]>>(
-        ...params: Ps
-      ) => Omit<ReturnType<Validators[K]>, "parse" | "$outputType"> &
-        GetChainableValidators<
-          ReturnType<Validators[K]>["$outputType"] extends Fn
-            ? Apply<
-                ReturnType<Validators[K]>["$outputType"],
-                [OutputType, ...Ps]
-              >
-            : ReturnType<Validators[K]>["$outputType"],
-          Validators,
-          usedFeatures | K
-        > & {
-          // we annotate `parse` function to accept args that make sense, for example `min` will
-          // except the arg to be string, not unknown, because we know it can only be used
-          // in a parsers chain after `string()`.
-          // however we need to substitute that arg with `unknown` for the library consumer,
-          // because in their context they should be able to start the chain with any type.
-          parse: (
-            arg: unknown
-          ) => ReturnType<Validators[K]>["$outputType"] extends Fn
-            ? Apply<
-                ReturnType<Validators[K]>["$outputType"],
-                [OutputType, ...Ps]
-              >
-            : ReturnType<Validators[K]>["$outputType"];
-          // We also need to update the $outputType, so that if it's a type-level function, we call it
-          // with the passed parameters, and if it's a type, we just return it.
-          $outputType: ReturnType<Validators[K]>["$outputType"] extends Fn
-            ? Apply<
-                ReturnType<Validators[K]>["$outputType"],
-                [OutputType, ...Ps]
-              >
-            : ReturnType<Validators[K]>["$outputType"];
-        }
+    ? ReturnType<Validators[K]>["nonCallable"] extends true
+      ? Omit<ReturnType<Validators[K]>, "parse" | "$outputType"> &
+          GetChainableValidators<
+            ReturnType<Validators[K]>["$outputType"] extends Fn
+              ? Apply<ReturnType<Validators[K]>["$outputType"], [OutputType]>
+              : ReturnType<Validators[K]>["$outputType"],
+            Validators,
+            usedFeatures | K
+          > & {
+            parse: (
+              arg: unknown
+            ) => ReturnType<Validators[K]>["$outputType"] extends Fn
+              ? Apply<ReturnType<Validators[K]>["$outputType"], [OutputType]>
+              : ReturnType<Validators[K]>["$outputType"];
+            $outputType: ReturnType<Validators[K]>["$outputType"] extends Fn
+              ? Apply<ReturnType<Validators[K]>["$outputType"], [OutputType]>
+              : ReturnType<Validators[K]>["$outputType"];
+          }
+      : <const Ps extends Parameters<Validators[K]>>(
+          ...params: Ps
+        ) => Omit<ReturnType<Validators[K]>, "parse" | "$outputType"> &
+          GetChainableValidators<
+            ReturnType<Validators[K]>["$outputType"] extends Fn
+              ? Apply<
+                  ReturnType<Validators[K]>["$outputType"],
+                  [OutputType, ...Ps]
+                >
+              : ReturnType<Validators[K]>["$outputType"],
+            Validators,
+            usedFeatures | K
+          > & {
+            // we annotate `parse` function to accept args that make sense, for example `min` will
+            // except the arg to be string, not unknown, because we know it can only be used
+            // in a parsers chain after `string()`.
+            // however we need to substitute that arg with `unknown` for the library consumer,
+            // because in their context they should be able to start the chain with any type.
+            parse: (
+              arg: unknown
+            ) => ReturnType<Validators[K]>["$outputType"] extends Fn
+              ? Apply<
+                  ReturnType<Validators[K]>["$outputType"],
+                  [OutputType, ...Ps]
+                >
+              : ReturnType<Validators[K]>["$outputType"];
+            // We also need to update the $outputType, so that if it's a type-level function, we call it
+            // with the passed parameters, and if it's a type, we just return it.
+            $outputType: ReturnType<Validators[K]>["$outputType"] extends Fn
+              ? Apply<
+                  ReturnType<Validators[K]>["$outputType"],
+                  [OutputType, ...Ps]
+                >
+              : ReturnType<Validators[K]>["$outputType"];
+          }
     : never;
 };
 
@@ -78,7 +96,7 @@ const createParserProxy = (
   validators: AnyFunReturning<Validator<any, any>>[],
   validatorsChain: Validator<any, any>[],
   outputType: string
-) => {
+): any => {
   return new Proxy(
     {},
     {
@@ -101,9 +119,11 @@ const createParserProxy = (
           (v) => v().name === key
         );
 
+        const isNonCallable = applicableValidators[validatorIdx]!().nonCallable;
+
         if (validatorIdx !== -1) {
-          return (args: any) => {
-            const validator = applicableValidators[validatorIdx](args);
+          if (isNonCallable) {
+            const validator = applicableValidators[validatorIdx]();
             const chain = validator.processChain
               ? validator.processChain(validatorsChain.at(-1) ?? null)
               : validatorsChain;
@@ -112,11 +132,27 @@ const createParserProxy = (
               validators,
               [...chain, validator],
               callIfFun(
-                applicableValidators[validatorIdx](args).$outputType,
+                applicableValidators[validatorIdx]().$outputType,
                 outputType
               )
             );
-          };
+          } else {
+            return (args: any) => {
+              const validator = applicableValidators[validatorIdx](args);
+              const chain = validator.processChain
+                ? validator.processChain(validatorsChain.at(-1) ?? null)
+                : validatorsChain;
+
+              return createParserProxy(
+                validators,
+                [...chain, validator],
+                callIfFun(
+                  applicableValidators[validatorIdx](args).$outputType,
+                  outputType
+                )
+              );
+            };
+          }
         } else {
           throw new Error(`Unknown parser ${key as string}`);
         }
@@ -140,14 +176,24 @@ export const initCorrettore = <
         (v) => v().name === key
       );
 
+      const isNonCallable = applicableValidators[validatorIdx]!().nonCallable;
+
       if (validatorIdx !== -1) {
-        return (args: any) => {
+        if (isNonCallable) {
           return createParserProxy(
             validators,
-            [applicableValidators[validatorIdx]!(args)],
+            [applicableValidators[validatorIdx]!()],
             applicableValidators[validatorIdx]!().$outputType
           );
-        };
+        } else {
+          return (args: any) => {
+            return createParserProxy(
+              validators,
+              [applicableValidators[validatorIdx]!(args)],
+              applicableValidators[validatorIdx]!().$outputType
+            );
+          };
+        }
       } else {
         throw new Error(`Unknown parser ${key as string}`);
       }

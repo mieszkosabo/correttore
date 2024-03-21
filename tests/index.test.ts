@@ -9,6 +9,7 @@ import {
   object,
   nullable,
   optional,
+  coerce,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 import {
@@ -35,6 +36,12 @@ describe("basic tests", () => {
     nullable,
     literal,
     optional,
+    coerce.coerce,
+    coerce.stringCoerce,
+    coerce.numberCoerce,
+    coerce.booleanCoerce,
+    coerce.dateCoerce,
+    coerce.bigintCoerce,
   ]);
 
   test("smoke tests", () => {
@@ -232,5 +239,16 @@ describe("basic tests", () => {
 
     type SchemaType2 = Infer<typeof schema2>;
     type test2 = Expect<Equal<SchemaType2, 42>>;
+  });
+
+  test("coerce", () => {
+    const schema = c.coerce.string();
+    expect(() => schema.parse("howdy")).not.toThrow();
+    expect(() => schema.parse(42)).not.toThrow();
+
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string>>;
+
+    // TODO: test other coerce functions
   });
 });

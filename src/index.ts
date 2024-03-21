@@ -7,3 +7,4 @@ export * from "./strings";
 export * from "./object";
 export * as arrays from "./arrays";
 export * from "./other";
+export * as coerce from "./coerce";
