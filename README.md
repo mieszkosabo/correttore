@@ -2,6 +2,7 @@
 
 A **proof of concept** of a tree shakable [Zod](https://zod.dev/) alternative.
 This library aims to have a 1:1 Zod compatible API, but with fine grain control over the final bundle size.
+This was done by a combination of Proxies and type-level programming.
 
 🤓 You can read the [blog post](https://softwaremill.com/a-novel-technique-for-creating-ergonomic-and-tree-shakable-typescript-libraries/) to learn how it works.
 
@@ -99,5 +100,7 @@ If you're interested in helping to bring this project to a production ready stat
 
 List of stuff to do:
 
-- [ ] Add more parsers/validators
+- [ ] Add more APIs (refer to the Roadmap (https://github.com/mieszkosabo/correttore/issues/2) to find out what needs to be done)
 - [ ] Add tests
+- [ ] Add docs/guides
+- [ ] Create premade "bundles" of popular subsets of APIs users may want to import
