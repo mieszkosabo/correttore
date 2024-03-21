@@ -9,20 +9,16 @@ This library aims to have a 1:1 Zod compatible API, but with fine grain control 
 
 ```ts
 // 1. import `initCorrettore` and features (validator) you want to use
-import { initCorrettore, string, email, minLength } from "correttore"; // 0.54 kB
+import { initCorrettore, string, email, min, object } from "correttore"; // 0.54 kB
 
 // 2. init the entrypoint variable `c`. It corresponds to Zod's `z`.
-export const c = initCorrettore({
-  string,
-  email,
-  minLength,
-});
+export const c = initCorrettore([string, email, min, object]);
 
 // 3. create schemas. Autocompletion will only show methods passed to `initCorrettore`.
 // the `object` method is always available
 const loginSchema = c.object({
   email: c.string().email(),
-  password: c.string().minLength(5),
+  password: c.string().min(5),
 });
 
 // 4. Infer type from schema:
@@ -81,13 +77,9 @@ LoginSchema.parse({ email: "jane@example.com", password: "12345678" });
 ### Correttore:
 
 ```ts
-import { email, minLength, initCorrettore, string } from "correttore"; // 0.54 kB
+import { email, min, initCorrettore, string, object } from "correttore"; // 0.54 kB
 
-export const c = initCorrettore({
-  string,
-  email,
-  minLength,
-});
+export const c = initCorrettore([string, email, min, object]);
 
 const LoginSchema = c.object({
   email: c.string().email(),
