@@ -8,6 +8,7 @@ import {
   Infer,
   object,
   nullable,
+  optional,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 import {
@@ -33,6 +34,7 @@ describe("basic tests", () => {
     length,
     nullable,
     literal,
+    optional,
   ]);
 
   test("smoke tests", () => {
@@ -76,10 +78,10 @@ describe("basic tests", () => {
       Equal<
         InferredSchema,
         {
-          readonly a: string;
-          readonly b: number;
-          readonly c: {
-            readonly d: string;
+          a: string;
+          b: number;
+          c: {
+            d: string;
           };
         }
       >
@@ -170,22 +172,63 @@ describe("basic tests", () => {
     const schema = c.nullable(c.string());
     expect(() => schema.parse("hello")).not.toThrow();
     expect(() => schema.parse(null)).not.toThrow();
+    expect(() => schema.parse(undefined)).toThrow();
+    expect(() => schema.parse(42)).toThrow();
 
     type SchemaType = Infer<typeof schema>;
     type test = Expect<Equal<SchemaType, string | null>>;
   });
 
+  test("optional", () => {
+    const schema = c.string().optional();
+    expect(() => schema.parse("hello")).not.toThrow();
+    expect(() => schema.parse(undefined)).not.toThrow();
+    expect(() => schema.parse(null)).toThrow();
+    expect(() => schema.parse(42)).toThrow();
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string | undefined>>;
+  });
+
+  test("optional alt syntax", () => {
+    const schema = c.optional(c.string());
+    expect(() => schema.parse("hello")).not.toThrow();
+    expect(() => schema.parse(undefined)).not.toThrow();
+    expect(() => schema.parse(null)).toThrow();
+    expect(() => schema.parse(42)).toThrow();
+
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, string | undefined>>;
+  });
+
+  test("optional fields", () => {
+    const schema = c.object({
+      a: c.string(),
+      b: c.string().optional(),
+    });
+
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<
+      Equal<
+        SchemaType,
+        {
+          a: string;
+          b?: string | undefined;
+        }
+      >
+    >;
+  });
+
   test("literal", () => {
     const schema = c.literal("howdy");
     expect(() => schema.parse("howdy")).not.toThrow();
-    expect(() => schema.parse("anything else")).not.toThrow();
+    expect(() => schema.parse("anything else")).toThrow();
 
     type SchemaType = Infer<typeof schema>;
     type test = Expect<Equal<SchemaType, "howdy">>;
 
     const schema2 = c.literal(42);
     expect(() => schema2.parse(42)).not.toThrow();
-    expect(() => schema2.parse("anything else")).not.toThrow();
+    expect(() => schema2.parse("anything else")).toThrow();
 
     type SchemaType2 = Infer<typeof schema2>;
     type test2 = Expect<Equal<SchemaType2, 42>>;

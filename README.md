@@ -26,8 +26,8 @@ import type { Infer } from "correttore";
 
 type LoginSchema = Infer<typeof loginSchema>;
 //   ^? {
-//       readonly email: string;
-//       readonly password: string;
+//       email: string;
+//       password: string;
 //     }
 
 // 5. Parse unknown data

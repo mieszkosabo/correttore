@@ -2,9 +2,9 @@ import { Fn } from "hotscript";
 import { Validator } from "./shared.types";
 
 interface ObjectSchema extends Fn {
-  return: {
+  return: MakeFieldsWithUndefinedOptional<{
     [K in keyof this["arg1"]]: this["arg1"][K]["$outputType"];
-  };
+  }>;
 }
 
 export const object = <
@@ -13,7 +13,7 @@ export const object = <
   schema: Schema
 ) => ({
   name: "object" as const,
-  $inputType: "unknown" as unknown,
+  $inputType: "root" as unknown,
   $outputType: "object" as unknown as ObjectSchema,
   parse: (arg: unknown) => {
     if (typeof arg !== "object" || arg === null || Array.isArray(arg)) {
@@ -31,3 +31,22 @@ export const object = <
     return arg;
   },
 });
+
+type FieldsWithUndefined<T> = Exclude<
+  keyof T,
+  {
+    [K in keyof T]: T[K] extends Exclude<T[K], undefined> ? K : never;
+  }[keyof T]
+>;
+
+type Expand<T> = T extends (...args: infer A) => infer R
+  ? (...args: Expand<A>) => Expand<R>
+  : T extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never;
+
+type MakeFieldsWithUndefinedOptional<T> = Expand<
+  {
+    [K in Exclude<keyof T, FieldsWithUndefined<T>>]: T[K];
+  } & { [K in FieldsWithUndefined<T>]?: T[K] }
+>;
