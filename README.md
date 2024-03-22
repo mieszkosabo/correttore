@@ -84,7 +84,7 @@ export const c = initCorrettore([string, email, min, object]);
 
 const LoginSchema = c.object({
   email: c.string().email(),
-  password: c.string().minLength(8),
+  password: c.string().min(8),
 });
 
 // Throws error
