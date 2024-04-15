@@ -8,9 +8,9 @@ interface ObjectSchema extends Fn {
 }
 
 export const object = <
-  const Schema extends Record<string, Validator<any, any>>
+  const Schema extends Record<string, Validator<any, any>>,
 >(
-  schema: Schema
+  schema: Schema,
 ) => ({
   name: "object" as const,
   $inputType: "root" as unknown,
@@ -20,7 +20,7 @@ export const object = <
       throw new Error(`${arg} is not an object.`);
     }
 
-    const result: Record<string, any> = {}
+    const result: Record<string, any> = {};
     for (const k of Object.keys(schema)) {
       if (k in arg) {
         result[k] = schema[k].parse((arg as any)[k]);
@@ -43,8 +43,8 @@ type FieldsWithUndefined<T> = Exclude<
 type Expand<T> = T extends (...args: infer A) => infer R
   ? (...args: Expand<A>) => Expand<R>
   : T extends infer O
-  ? { [K in keyof O]: O[K] }
-  : never;
+    ? { [K in keyof O]: O[K] }
+    : never;
 
 type MakeFieldsWithUndefinedOptional<T> = Expand<
   {
@@ -80,7 +80,7 @@ export const passthrough = () => {
       }
       ctx.chain.parse(arg);
 
-      const result = {}
+      const result = {};
       Object.assign(result, arg);
       return result;
     },
@@ -112,9 +112,13 @@ export const strict = () => {
 
       const parsed = ctx.chain.parse(arg);
       const recognizedKeys = Object.keys(parsed);
-      const unrecognizedKeys = Object.keys(arg).filter((k) => !recognizedKeys.includes(k));
+      const unrecognizedKeys = Object.keys(arg).filter(
+        (k) => !recognizedKeys.includes(k),
+      );
       if (unrecognizedKeys.length > 0) {
-        throw new Error(`Unrecognized keys: ${unrecognizedKeys.map(k => `'${k}'`).join(", ")}`);
+        throw new Error(
+          `Unrecognized keys: ${unrecognizedKeys.map((k) => `'${k}'`).join(", ")}`,
+        );
       }
       return parsed;
     },

@@ -6,7 +6,7 @@ interface SetType extends Fn {
 }
 
 export const set = <const Schema extends Validator<any, any>>(
-  chain: Schema
+  chain: Schema,
 ) => ({
   name: "set" as const,
   $inputType: "root" as unknown as any,
@@ -19,7 +19,7 @@ export const set = <const Schema extends Validator<any, any>>(
         chain.parse(el);
       } else {
         throw new Error(
-          `No inner validator for set. Make sure to do c.set(c.someValidator())`
+          `No inner validator for set. Make sure to do c.set(c.someValidator())`,
         );
       }
     });

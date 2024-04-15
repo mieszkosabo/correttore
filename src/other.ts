@@ -31,7 +31,7 @@ export const nullable = (innerValidator?: Validator<any, any>) => {
         chain.parse(arg);
       } else {
         throw new Error(
-          `No inner validator for array. Make sure to either call .array() after some validator or do c.array(c.someValidator())`
+          `No inner validator for array. Make sure to either call .array() after some validator or do c.array(c.someValidator())`,
         );
       }
 
@@ -70,7 +70,7 @@ export const optional = (innerValidator?: Validator<any, any>) => {
         chain.parse(arg);
       } else {
         throw new Error(
-          `No inner validator for array. Make sure to either call .array() after some validator or do c.array(c.someValidator())`
+          `No inner validator for array. Make sure to either call .array() after some validator or do c.array(c.someValidator())`,
         );
       }
 
