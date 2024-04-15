@@ -6,6 +6,7 @@ import {
   Infer,
   object,
   passthrough,
+  strict,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 
@@ -15,6 +16,7 @@ describe("objects", () => {
     string,
     number,
     passthrough,
+    strict,
   ]);
 
   test("by default, object schemas strip out unrecognized keys during parsing", () => {
@@ -41,5 +43,17 @@ describe("objects", () => {
 
     type SchemaType = Infer<typeof schema>;
     type test = Expect<Equal<SchemaType, { x: number, y: number }>>;
+  });
+
+  test("throw if unknown keys in the input", () => {
+    const schema = c.object({
+      x: c.number(),
+    }).strict();
+    expect(schema.parse({x: 1})).toEqual({x: 1});
+    expect(() => schema.parse({x: 1, y: 2})).toThrow()
+    expect(() => schema.parse({x: "a"})).toThrow()
+
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, { x: number }>>;
   });
 });
