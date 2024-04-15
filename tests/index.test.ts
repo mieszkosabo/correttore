@@ -70,7 +70,7 @@ describe("basic tests", () => {
         .parse({
           a: "hello",
           b: 42,
-        })
+        }),
     ).not.toThrow();
   });
 
@@ -93,7 +93,7 @@ describe("basic tests", () => {
 
     type InferredSchema = Infer<typeof schema>;
 
-    type typeTest = Expect<
+    type _typeTest = Expect<
       Equal<
         InferredSchema,
         {
@@ -108,11 +108,11 @@ describe("basic tests", () => {
 
     const schema2 = c.array(c.string().email()).max(4).nonEmpty();
     type InferredSchema2 = Infer<typeof schema2>;
-    type typeTest2 = Expect<Equal<InferredSchema2, [string, ...string[]]>>;
+    type _typeTest2 = Expect<Equal<InferredSchema2, [string, ...string[]]>>;
 
     const schema3 = c.string().email().array().max(4).nonEmpty();
     type InferredSchema3 = Infer<typeof schema3>;
-    type typeTest3 = Expect<Equal<InferredSchema3, [string, ...string[]]>>;
+    type _typeTest3 = Expect<Equal<InferredSchema3, [string, ...string[]]>>;
   });
 
   test("arrays", () => {
@@ -120,7 +120,7 @@ describe("basic tests", () => {
     expect(() => c.array(c.string()).parse([])).not.toThrow();
     expect(() => c.array(c.string()).parse([42])).toThrow();
     expect(() =>
-      c.array(c.string()).nonEmpty().parse(["a", "b"])
+      c.array(c.string()).nonEmpty().parse(["a", "b"]),
     ).not.toThrow();
     expect(() => c.array(c.string()).nonEmpty().parse([])).toThrow();
     expect(() =>
@@ -130,7 +130,7 @@ describe("basic tests", () => {
         .min(3)
         .max(5)
         .length(4)
-        .parse(["a", "b", "c", "d"])
+        .parse(["a", "b", "c", "d"]),
     ).not.toThrow();
     expect(() =>
       c
@@ -139,12 +139,12 @@ describe("basic tests", () => {
         .min(3)
         .max(5)
         .length(4)
-        .parse(["a", "b", "d"])
+        .parse(["a", "b", "d"]),
     ).toThrow();
 
     const schema = c.array(c.string());
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string[]>>;
+    type _test = Expect<Equal<SchemaType, string[]>>;
   });
 
   test("arrays alternative syntax", () => {
@@ -161,7 +161,7 @@ describe("basic tests", () => {
         .min(3)
         .max(5)
         .length(4)
-        .parse(["a", "b", "c", "d"])
+        .parse(["a", "b", "c", "d"]),
     ).not.toThrow();
     expect(() =>
       c
@@ -171,17 +171,17 @@ describe("basic tests", () => {
         .min(3)
         .max(5)
         .length(4)
-        .parse(["a", "b", "d"])
+        .parse(["a", "b", "d"]),
     ).toThrow();
 
     const schema = c.string().array();
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string[]>>;
+    type _test = Expect<Equal<SchemaType, string[]>>;
   });
 
   test("sets", () => {
     expect(() =>
-      c.set(c.string().min(2)).parse(new Set(["ab", "ba"]))
+      c.set(c.string().min(2)).parse(new Set(["ab", "ba"])),
     ).not.toThrow();
     expect(() => c.set(c.string()).parse(new Set())).not.toThrow();
     expect(() => c.set(c.string()).parse(new Set([42]))).toThrow();
@@ -189,7 +189,7 @@ describe("basic tests", () => {
       c
         .set(c.string())
         .nonEmpty()
-        .parse(new Set(["a", "b"]))
+        .parse(new Set(["a", "b"])),
     ).not.toThrow();
     expect(() => c.set(c.string()).nonEmpty().parse(new Set([]))).toThrow();
     expect(() =>
@@ -199,7 +199,7 @@ describe("basic tests", () => {
         .min(3)
         .max(5)
         .size(4)
-        .parse(new Set(["a", "b", "c", "d"]))
+        .parse(new Set(["a", "b", "c", "d"])),
     ).not.toThrow();
     expect(() =>
       c
@@ -208,12 +208,12 @@ describe("basic tests", () => {
         .min(3)
         .max(5)
         .size(4)
-        .parse(new Set(["a", "b", "d"]))
+        .parse(new Set(["a", "b", "d"])),
     ).toThrow();
 
     const schema = c.set(c.string());
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, Set<string>>>;
+    type _test = Expect<Equal<SchemaType, Set<string>>>;
   });
 
   test("nullable", () => {
@@ -221,7 +221,7 @@ describe("basic tests", () => {
     expect(() => schema.parse("hello")).not.toThrow();
     expect(() => schema.parse(null)).not.toThrow();
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string | null>>;
+    type _test = Expect<Equal<SchemaType, string | null>>;
   });
 
   test("nullable alt syntax", () => {
@@ -232,7 +232,7 @@ describe("basic tests", () => {
     expect(() => schema.parse(42)).toThrow();
 
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string | null>>;
+    type _test = Expect<Equal<SchemaType, string | null>>;
   });
 
   test("optional", () => {
@@ -242,7 +242,7 @@ describe("basic tests", () => {
     expect(() => schema.parse(null)).toThrow();
     expect(() => schema.parse(42)).toThrow();
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string | undefined>>;
+    type _test = Expect<Equal<SchemaType, string | undefined>>;
   });
 
   test("optional alt syntax", () => {
@@ -253,7 +253,7 @@ describe("basic tests", () => {
     expect(() => schema.parse(42)).toThrow();
 
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string | undefined>>;
+    type _test = Expect<Equal<SchemaType, string | undefined>>;
   });
 
   test("optional fields", () => {
@@ -263,7 +263,7 @@ describe("basic tests", () => {
     });
 
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<
+    type _test = Expect<
       Equal<
         SchemaType,
         {
@@ -280,14 +280,14 @@ describe("basic tests", () => {
     expect(() => schema.parse("anything else")).toThrow();
 
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, "howdy">>;
+    type _test = Expect<Equal<SchemaType, "howdy">>;
 
     const schema2 = c.literal(42);
     expect(() => schema2.parse(42)).not.toThrow();
     expect(() => schema2.parse("anything else")).toThrow();
 
     type SchemaType2 = Infer<typeof schema2>;
-    type test2 = Expect<Equal<SchemaType2, 42>>;
+    type _test2 = Expect<Equal<SchemaType2, 42>>;
   });
 
   test("coerce", () => {
@@ -296,7 +296,7 @@ describe("basic tests", () => {
     expect(() => schema.parse(42)).not.toThrow();
 
     type SchemaType = Infer<typeof schema>;
-    type test = Expect<Equal<SchemaType, string>>;
+    type _test = Expect<Equal<SchemaType, string>>;
 
     // TODO: test other coerce functions
   });

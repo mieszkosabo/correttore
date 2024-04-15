@@ -108,7 +108,7 @@ export const neverType = () => ({
   $outputType: "never" as unknown as never,
   parse: (arg: unknown) => {
     throw new Error(
-      `Value of type ${typeof arg} cannot be assigned to type 'never'.`
+      `Value of type ${typeof arg} cannot be assigned to type 'never'.`,
     );
   },
 });

@@ -27,7 +27,7 @@ export const length = (exactLength: number) => ({
   parse: (arg: string) => {
     if (arg.length !== exactLength)
       throw new Error(
-        `${arg} does not have the expected length of ${exactLength}.`
+        `${arg} does not have the expected length of ${exactLength}.`,
       );
     return arg;
   },

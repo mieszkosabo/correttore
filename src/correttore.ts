@@ -5,7 +5,7 @@ import { Validator } from "./shared.types";
 type GetChainableValidators<
   OutputType,
   Validators extends AnyFunReturning<Validator<any, any>>[],
-  usedFeatures = never
+  usedFeatures = never,
 > = {
   [K in Exclude<
     keyof PickByValue<Validators, AnyFunReturning<Validator<OutputType, any>>>,
@@ -23,7 +23,7 @@ type GetChainableValidators<
             usedFeatures | K
           > & {
             parse: (
-              arg: unknown
+              arg: unknown,
             ) => ReturnType<Validators[K]>["$outputType"] extends Fn
               ? Apply<ReturnType<Validators[K]>["$outputType"], [OutputType]>
               : ReturnType<Validators[K]>["$outputType"];
@@ -50,7 +50,7 @@ type GetChainableValidators<
             // however we need to substitute that arg with `unknown` for the library consumer,
             // because in their context they should be able to start the chain with any type.
             parse: (
-              arg: unknown
+              arg: unknown,
             ) => ReturnType<Validators[K]>["$outputType"] extends Fn
               ? Apply<
                   ReturnType<Validators[K]>["$outputType"],
@@ -83,7 +83,7 @@ const doesExtend = (A: string, B: string) => {
 
 const callIfFun = (
   maybeFn: string | AnyFunReturning<string>,
-  arg: any
+  arg: any,
 ): string => {
   if (typeof maybeFn === "function") {
     return maybeFn(arg);
@@ -95,7 +95,7 @@ const callIfFun = (
 const createParserProxy = (
   validators: AnyFunReturning<Validator<any, any>>[],
   validatorsChain: Validator<any, any>[],
-  outputType: string
+  outputType: string,
 ): any => {
   return new Proxy(
     {},
@@ -113,10 +113,10 @@ const createParserProxy = (
           };
         }
         const applicableValidators = validators.filter((v) =>
-          doesExtend(outputType, v().$inputType)
+          doesExtend(outputType, v().$inputType),
         );
         const validatorIdx = applicableValidators.findIndex(
-          (v) => v().name === key
+          (v) => v().name === key,
         );
 
         const isNonCallable = applicableValidators[validatorIdx]!().nonCallable;
@@ -133,8 +133,8 @@ const createParserProxy = (
               [...chain, validator],
               callIfFun(
                 applicableValidators[validatorIdx]().$outputType,
-                outputType
-              )
+                outputType,
+              ),
             );
           } else {
             return (args: any) => {
@@ -148,8 +148,8 @@ const createParserProxy = (
                 [...chain, validator],
                 callIfFun(
                   applicableValidators[validatorIdx](args).$outputType,
-                  outputType
-                )
+                  outputType,
+                ),
               );
             };
           }
@@ -157,23 +157,23 @@ const createParserProxy = (
           throw new Error(`Unknown parser ${key as string}`);
         }
       },
-    }
+    },
   );
 };
 
 export const initCorrettore = <
-  const Validators extends AnyFunReturning<Validator<any, any>>[]
+  const Validators extends AnyFunReturning<Validator<any, any>>[],
 >(
-  validators: Validators
+  validators: Validators,
 ): GetChainableValidators<unknown, Validators> => {
   return new Proxy({} as GetChainableValidators<unknown, Validators>, {
     get(_target, key) {
       // the base validators (ones that can be used from `c` variable) take "unknown" as their input
       const applicableValidators = validators.filter((v) =>
-        doesExtend("root", v().$inputType)
+        doesExtend("root", v().$inputType),
       );
       const validatorIdx = applicableValidators.findIndex(
-        (v) => v().name === key
+        (v) => v().name === key,
       );
 
       const isNonCallable = applicableValidators[validatorIdx]!().nonCallable;
@@ -183,14 +183,14 @@ export const initCorrettore = <
           return createParserProxy(
             validators,
             [applicableValidators[validatorIdx]!()],
-            applicableValidators[validatorIdx]!().$outputType
+            applicableValidators[validatorIdx]!().$outputType,
           );
         } else {
           return (args: any) => {
             return createParserProxy(
               validators,
               [applicableValidators[validatorIdx]!(args)],
-              applicableValidators[validatorIdx]!().$outputType
+              applicableValidators[validatorIdx]!().$outputType,
             );
           };
         }
