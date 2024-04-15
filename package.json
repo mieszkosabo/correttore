@@ -19,6 +19,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "clean": "rm -rf dist",
     "prettier:write": "prettier --write .",
     "check:lint": "eslint .",
     "check:format": "prettier --check .",

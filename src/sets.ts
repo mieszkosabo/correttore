@@ -1,5 +1,5 @@
 import { Fn } from "hotscript";
-import { Validator } from "./shared.types";
+import { Identity, Validator } from "./shared.types";
 
 interface SetType extends Fn {
   return: Set<this["arg1"]["$outputType"]>;
@@ -26,10 +26,6 @@ export const set = <const Schema extends Validator<any, any>>(
     return arg;
   },
 });
-
-interface Identity extends Fn {
-  return: this["arg0"];
-}
 
 export const nonEmpty = () => ({
   name: "nonEmpty" as const,

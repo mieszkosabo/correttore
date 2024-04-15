@@ -1,3 +1,5 @@
+import { Fn } from "hotscript";
+
 export type Validator<Input, Output> = {
   name: string;
   $inputType: Input;
@@ -17,3 +19,7 @@ export type Primitive =
   | symbol
   | null
   | undefined;
+
+export interface Identity extends Fn {
+  return: this["arg0"];
+}
