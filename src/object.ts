@@ -20,15 +20,16 @@ export const object = <
       throw new Error(`${arg} is not an object.`);
     }
 
+    const result: Record<string, any> = {}
     for (const k of Object.keys(schema)) {
       if (k in arg) {
-        schema[k].parse((arg as any)[k]);
+        result[k] = schema[k].parse((arg as any)[k]);
       } else {
         throw new Error(`Missing property ${k}`);
       }
     }
 
-    return arg;
+    return result;
   },
 });
 
@@ -50,3 +51,72 @@ type MakeFieldsWithUndefinedOptional<T> = Expand<
     [K in Exclude<keyof T, FieldsWithUndefined<T>>]: T[K];
   } & { [K in FieldsWithUndefined<T>]?: T[K] }
 >;
+
+interface Identity extends Fn {
+  return: this["arg0"];
+}
+
+export const passthrough = () => {
+  const ctx = {
+    chain: null as Validator<any, any> | null,
+  } satisfies { chain: Validator<any, any> | null };
+
+  return {
+    name: "passthrough" as const,
+    $inputType: "object" as unknown as any,
+    $outputType: "object" as unknown as Identity,
+    processChain: (chain: Validator<any, any> | null) => {
+      if (chain !== null) {
+        ctx.chain = chain;
+      }
+      return [];
+    },
+    parse: (arg: Record<string, any>) => {
+      if (typeof arg !== "object" || arg === null || Array.isArray(arg)) {
+        throw new Error(`${arg} is not an object.`);
+      }
+      if (ctx.chain === null) {
+        throw new Error("passthrough must be used after an object schema");
+      }
+      ctx.chain.parse(arg);
+
+      const result = {}
+      Object.assign(result, arg);
+      return result;
+    },
+  };
+};
+
+export const strict = () => {
+  const ctx = {
+    chain: null as Validator<any, any> | null,
+  } satisfies { chain: Validator<any, any> | null };
+
+  return {
+    name: "strict" as const,
+    $inputType: "object" as unknown as any,
+    $outputType: "object" as unknown as Identity,
+    processChain: (chain: Validator<any, any> | null) => {
+      if (chain !== null) {
+        ctx.chain = chain;
+      }
+      return [];
+    },
+    parse: (arg: Record<string, any>) => {
+      if (typeof arg !== "object" || arg === null || Array.isArray(arg)) {
+        throw new Error(`${arg} is not an object.`);
+      }
+      if (ctx.chain === null) {
+        throw new Error("strict must be used after an object schema");
+      }
+
+      const parsed = ctx.chain.parse(arg);
+      const recognizedKeys = Object.keys(parsed);
+      const unrecognizedKeys = Object.keys(arg).filter((k) => !recognizedKeys.includes(k));
+      if (unrecognizedKeys.length > 0) {
+        throw new Error(`Unrecognized keys: ${unrecognizedKeys.map(k => `'${k}'`).join(", ")}`);
+      }
+      return parsed;
+    },
+  };
+};
