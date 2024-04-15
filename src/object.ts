@@ -1,5 +1,5 @@
 import { Fn } from "hotscript";
-import { Validator } from "./shared.types";
+import { Identity, Validator } from "./shared.types";
 
 interface ObjectSchema extends Fn {
   return: MakeFieldsWithUndefinedOptional<{
@@ -51,10 +51,6 @@ type MakeFieldsWithUndefinedOptional<T> = Expand<
     [K in Exclude<keyof T, FieldsWithUndefined<T>>]: T[K];
   } & { [K in FieldsWithUndefined<T>]?: T[K] }
 >;
-
-interface Identity extends Fn {
-  return: this["arg0"];
-}
 
 export const passthrough = () => {
   const ctx = {

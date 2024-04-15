@@ -1,5 +1,5 @@
 import { Fn } from "hotscript";
-import { Validator } from "./shared.types";
+import { Identity, Validator } from "./shared.types";
 
 interface ArrayType extends Fn {
   return: this["args"] extends [...any, infer last]
@@ -53,10 +53,6 @@ export const nonEmpty = () => ({
     return arg;
   },
 });
-
-interface Identity extends Fn {
-  return: this["arg0"];
-}
 
 export const min = (min: number) => ({
   name: "min" as const,
