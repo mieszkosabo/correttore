@@ -20,6 +20,13 @@ import {
   length,
 } from "../src/arrays";
 import { literal } from "../src/literal";
+import {
+  set,
+  nonEmpty as setNonEmpty,
+  min as setMin,
+  max as setMax,
+  length as setLength,
+} from "../src/sets";
 
 describe("basic tests", () => {
   const c = initCorrettore([
@@ -36,6 +43,11 @@ describe("basic tests", () => {
     nullable,
     literal,
     optional,
+    set,
+    setNonEmpty,
+    setMin,
+    setMax,
+    setLength,
     coerce.coerce,
     coerce.stringCoerce,
     coerce.numberCoerce,
@@ -165,6 +177,38 @@ describe("basic tests", () => {
     const schema = c.string().array();
     type SchemaType = Infer<typeof schema>;
     type test = Expect<Equal<SchemaType, string[]>>;
+  });
+
+  test("sets", () => {
+    expect(() => c.set(c.string().min(2)).parse(new Set(["ab", "ba"]))).not.toThrow();
+    expect(() => c.set(c.string()).parse(new Set())).not.toThrow();
+    expect(() => c.set(c.string()).parse(new Set([42]))).toThrow();
+    expect(() =>
+        c.set(c.string()).nonEmpty().parse(new Set(["a", "b"]))
+    ).not.toThrow();
+    expect(() => c.set(c.string()).nonEmpty().parse(new Set([]))).toThrow();
+    expect(() =>
+        c
+            .set(c.string())
+            .nonEmpty()
+            .min(3)
+            .max(5)
+            .length(4)
+            .parse(new Set(["a", "b", "c", "d"]))
+    ).not.toThrow();
+    expect(() =>
+        c
+            .set(c.string())
+            .nonEmpty()
+            .min(3)
+            .max(5)
+            .length(4)
+            .parse(new Set(["a", "b", "d"]))
+    ).toThrow();
+
+    const schema = c.set(c.string());
+    type SchemaType = Infer<typeof schema>;
+    type test = Expect<Equal<SchemaType, Set<string>>>;
   });
 
   test("nullable", () => {
