@@ -9,3 +9,5 @@ export * as arrays from "./arrays";
 export * as sets from "./sets";
 export * from "./other";
 export * as coerce from "./coerce";
+export * from "./union";
+export * from "./literal";
