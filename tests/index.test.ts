@@ -9,7 +9,9 @@ import {
   object,
   nullable,
   optional,
+  or,
   coerce,
+  boolean,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 import {
@@ -33,6 +35,7 @@ describe("basic tests", () => {
     string,
     min,
     number,
+    boolean,
     email,
     object,
     array,
@@ -43,6 +46,7 @@ describe("basic tests", () => {
     nullable,
     literal,
     optional,
+    or,
     set,
     setNonEmpty,
     setMin,
@@ -237,5 +241,47 @@ describe("basic tests", () => {
     type _test = Expect<Equal<SchemaType, string>>;
 
     // TODO: test other coerce functions
+  });
+
+  describe("or", () => {
+    test("basic", () => {
+      const schema = c.string().or(c.number()).or(c.boolean());
+      expect(schema.parse("yay")).toEqual("yay");
+      expect(schema.parse(42)).toEqual(42);
+      expect(() => schema.parse({ x: 42 })).toThrow();
+
+      type SchemaType = Infer<typeof schema>;
+      type _test = Expect<Equal<SchemaType, string | number | boolean>>;
+    });
+
+    test("literal", () => {
+      const schema = c.literal("a").or(c.literal(42)).or(c.literal("b"));
+      expect(schema.parse("a")).toEqual("a");
+      expect(schema.parse(42)).toEqual(42);
+      expect(() => schema.parse("aaa")).toThrow();
+
+      type SchemaType = Infer<typeof schema>;
+      type _test = Expect<Equal<SchemaType, "a" | 42 | "b">>;
+    });
+
+    test("object", () => {
+      const schema = c
+        .object({ x: number() })
+        .or(c.object({ y: string() }))
+        .or(c.string());
+      expect(schema.parse({ x: 42 })).toEqual({ x: 42 });
+      expect(schema.parse({ y: "foo" })).toEqual({ y: "foo" });
+      expect(schema.parse("foo")).toEqual("foo");
+      expect(() => schema.parse({ x: "bar" })).toThrow();
+      expect(() => schema.parse({ y: 42 })).toThrow();
+
+      // strip keys in other schema
+      expect(schema.parse({ x: 42, y: "foo" })).toEqual({ x: 42 });
+
+      type SchemaType = Infer<typeof schema>;
+      type _test = Expect<
+        Equal<SchemaType, { x: number } | { y: string } | string>
+      >;
+    });
   });
 });

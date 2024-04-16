@@ -23,7 +23,8 @@
     "prettier:write": "prettier --write .",
     "check:lint": "eslint .",
     "check:format": "prettier --check .",
-    "check:types": "tsc --noEmit --pretty"
+    "check:types": "tsc --noEmit --pretty",
+    "check:all": "bun check:lint && bun check:format && bun check:types && bun test"
   },
   "keywords": [],
   "author": "Mieszko Sabo",
