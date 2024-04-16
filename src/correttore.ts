@@ -2,6 +2,15 @@ import { Apply, Fn } from "hotscript";
 import { AnyFunReturning, PickByValue } from "./util.types";
 import { Validator } from "./shared.types";
 
+// union type of features that are allowed to be chained multiple times
+type multiChainableFeatures = "or";
+type FindMultiChainableFeatures<
+  Validators extends AnyFunReturning<Validator<any, any>>[],
+> = keyof PickByValue<
+  Validators,
+  AnyFunReturning<{ name: multiChainableFeatures }>
+>;
+
 type GetChainableValidators<
   OutputType,
   Validators extends AnyFunReturning<Validator<any, any>>[],
@@ -9,7 +18,11 @@ type GetChainableValidators<
 > = {
   [K in Exclude<
     keyof PickByValue<Validators, AnyFunReturning<Validator<OutputType, any>>>,
-    usedFeatures
+    // don't show the same feature in the same chain, e.g.
+    // `c.string().string()` should not be allowed.
+    // However we allows some features to be multi-chainable, e.g.
+    // `or` in `c.or(c.string()).or(c.number())`
+    Exclude<usedFeatures, FindMultiChainableFeatures<Validators>>
   > as K extends keyof Validators
     ? ReturnType<Validators[K]>["name"]
     : ""]: K extends keyof Validators
