@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import {
   Infer,
   boolean,
@@ -9,10 +9,22 @@ import {
   string,
   literal,
   union,
+  url,
+  optional,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 
-const c = initCorrettore([string, number, or, boolean, object, literal, union]);
+const c = initCorrettore([
+  string,
+  number,
+  or,
+  boolean,
+  object,
+  literal,
+  union,
+  url,
+  optional,
+]);
 
 describe("or", () => {
   test("basic", () => {
@@ -103,5 +115,14 @@ describe("union", () => {
     type _test = Expect<
       Equal<SchemaType, { x: number } | { y: string } | string>
     >;
+  });
+
+  test("case from zod docs", () => {
+    const optionalUrl = c.union([c.string().url().optional(), c.literal("")]);
+
+    expect(optionalUrl.parse(undefined)).toBe(undefined);
+    expect(optionalUrl.parse("")).toBe("");
+    expect(optionalUrl.parse("https://zod.dev")).toBe("https://zod.dev");
+    expect(() => optionalUrl.parse("not a valid url")).toThrow();
   });
 });

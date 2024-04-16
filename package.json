@@ -21,10 +21,11 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "prettier:write": "prettier --write .",
+    "test": "vitest run",
     "check:lint": "eslint .",
     "check:format": "prettier --check .",
     "check:types": "tsc --noEmit --pretty",
-    "check:all": "bun check:lint && bun check:format && bun check:types && bun test"
+    "check:all": "bun check:lint && bun check:format && bun check:types && bun run test"
   },
   "keywords": [],
   "author": "Mieszko Sabo",
@@ -46,6 +47,7 @@
     "prettier": "^3.2.5",
     "tsup": "^7.2.0",
     "typescript": "5.3.3",
-    "typescript-eslint": "^7.6.0"
+    "typescript-eslint": "^7.6.0",
+    "vitest": "^1.5.0"
   }
 }

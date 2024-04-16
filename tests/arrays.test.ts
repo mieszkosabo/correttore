@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { initCorrettore, min, string, arrays, Infer } from "../src";
 import { Equal, Expect } from "./helpers.types";
 
