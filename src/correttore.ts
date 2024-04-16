@@ -178,8 +178,8 @@ export const initCorrettore = <
   const Validators extends AnyFunReturning<Validator<any, any>>[],
 >(
   validators: Validators,
-): GetChainableValidators<unknown, Validators> => {
-  return new Proxy({} as GetChainableValidators<unknown, Validators>, {
+): GetChainableValidators<"root", Validators> => {
+  return new Proxy({} as GetChainableValidators<"root", Validators>, {
     get(_target, key) {
       // the base validators (ones that can be used from `c` variable) take "unknown" as their input
       const applicableValidators = validators.filter((v) =>

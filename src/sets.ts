@@ -9,7 +9,7 @@ export const set = <const Schema extends Validator<any, any>>(
   chain: Schema,
 ) => ({
   name: "set" as const,
-  $inputType: "root" as unknown as any,
+  $inputType: "root" as const,
   $outputType: "set" as unknown as SetType,
   parse: (arg: unknown) => {
     if (typeof arg !== "object" || arg === null || !(arg instanceof Set))

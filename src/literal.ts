@@ -7,7 +7,7 @@ interface Literal extends Fn {
 
 export const literal = <P extends Primitive>(lit: P) => ({
   name: "literal" as const,
-  $inputType: "root" as unknown as unknown,
+  $inputType: "root" as const,
   $outputType: "general" as unknown as Literal,
   parse: (arg: unknown) => {
     if (lit !== arg) {

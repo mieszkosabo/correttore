@@ -53,7 +53,7 @@ export const union = <Options extends Validator<any, any>[]>(
   options: Options,
 ) => ({
   name: "union" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "any" as unknown as Union,
   parse: (arg: unknown) => {
     for (const option of options) {

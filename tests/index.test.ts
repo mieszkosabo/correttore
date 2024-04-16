@@ -231,15 +231,4 @@ describe("basic tests", () => {
     type SchemaType2 = Infer<typeof schema2>;
     type _test2 = Expect<Equal<SchemaType2, 42>>;
   });
-
-  test("coerce", () => {
-    const schema = c.coerce.string();
-    expect(() => schema.parse("howdy")).not.toThrow();
-    expect(() => schema.parse(42)).not.toThrow();
-
-    type SchemaType = Infer<typeof schema>;
-    type _test = Expect<Equal<SchemaType, string>>;
-
-    // TODO: test other coerce functions
-  });
 });

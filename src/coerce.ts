@@ -1,11 +1,13 @@
-type Coerce = "coerce" & {
-  __brand: "coerce";
-};
+declare const __brand: unique symbol;
+type Brand<B> = { [__brand]: B };
+export type Branded<T, B> = T & Brand<B>;
+
+type Coerce = Branded<"coerce", "coerce">;
 
 export const coerce = () => ({
   nonCallable: true as const,
   name: "coerce" as const,
-  $inputType: "root" as unknown as unknown,
+  $inputType: "root" as const,
   $outputType: "coerce" as unknown as Coerce,
   parse: () => {},
 });

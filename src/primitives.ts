@@ -1,6 +1,6 @@
 export const string = () => ({
   name: "string" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "string" as unknown as string,
   parse: (arg: unknown) => {
     if (typeof arg !== "string") throw new Error(`${arg} is not a string.`);
@@ -10,7 +10,7 @@ export const string = () => ({
 
 export const number = () => ({
   name: "number" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "number" as unknown as number,
   parse: (arg: unknown) => {
     if (typeof arg !== "number") throw new Error(`${arg} is not a number.`);
@@ -20,7 +20,7 @@ export const number = () => ({
 
 export const bigint = () => ({
   name: "bigint" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "bigint" as unknown as bigint,
   parse: (arg: unknown) => {
     if (typeof arg !== "bigint") throw new Error(`${arg} is not a bigint.`);
@@ -30,7 +30,7 @@ export const bigint = () => ({
 
 export const boolean = () => ({
   name: "boolean" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "boolean" as unknown as boolean,
   parse: (arg: unknown) => {
     if (typeof arg !== "boolean") throw new Error(`${arg} is not a boolean.`);
@@ -40,7 +40,7 @@ export const boolean = () => ({
 
 export const date = () => ({
   name: "date" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "Date" as unknown as Date,
   parse: (arg: unknown) => {
     if (!(arg instanceof Date)) throw new Error(`${arg} is not a Date.`);
@@ -50,7 +50,7 @@ export const date = () => ({
 
 export const symbol = () => ({
   name: "symbol" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "symbol" as unknown as symbol,
   parse: (arg: unknown) => {
     if (typeof arg !== "symbol") throw new Error(`${arg} is not a symbol.`);
@@ -60,7 +60,7 @@ export const symbol = () => ({
 
 export const undefinedType = () => ({
   name: "undefined" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "undefined" as unknown as undefined,
   parse: (arg: unknown) => {
     if (arg !== undefined) throw new Error(`${arg} is not undefined.`);
@@ -70,7 +70,7 @@ export const undefinedType = () => ({
 
 export const nullType = () => ({
   name: "null" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "null" as unknown as null,
   parse: (arg: unknown) => {
     if (arg !== null) throw new Error(`${arg} is not null.`);
@@ -80,7 +80,7 @@ export const nullType = () => ({
 
 export const voidType = () => ({
   name: "void" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "void" as unknown as void,
   parse: (arg: unknown) => {
     if (arg !== undefined) throw new Error(`${arg} is not void.`);
@@ -90,21 +90,21 @@ export const voidType = () => ({
 
 export const anyType = () => ({
   name: "any" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "any" as unknown as any,
   parse: (arg: unknown) => arg,
 });
 
 export const unknownType = () => ({
   name: "root" as const,
-  $inputType: "root" as unknown,
-  $outputType: "root" as unknown as unknown,
+  $inputType: "root" as const,
+  $outputType: "root" as const as unknown,
   parse: (arg: unknown) => arg,
 });
 
 export const neverType = () => ({
   name: "never" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "never" as unknown as never,
   parse: (arg: unknown) => {
     throw new Error(
@@ -115,7 +115,7 @@ export const neverType = () => ({
 
 export const nanType = () => ({
   name: "nan" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "number" as unknown as number,
   parse: (arg: unknown) => {
     const parsedValue = parseFloat(arg as string);

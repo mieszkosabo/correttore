@@ -13,7 +13,7 @@ export const object = <
   schema: Schema,
 ) => ({
   name: "object" as const,
-  $inputType: "root" as unknown,
+  $inputType: "root" as const,
   $outputType: "object" as unknown as ObjectSchema,
   parse: (arg: unknown) => {
     if (typeof arg !== "object" || arg === null || Array.isArray(arg)) {
