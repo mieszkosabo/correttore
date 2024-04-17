@@ -12,6 +12,7 @@ import {
   or,
   coerce,
   boolean,
+  nullish,
 } from "../src";
 import { Equal, Expect } from "./helpers.types";
 import {
@@ -44,6 +45,7 @@ describe("basic tests", () => {
     arrayMax,
     length,
     nullable,
+    nullish,
     literal,
     optional,
     or,
@@ -211,6 +213,43 @@ describe("basic tests", () => {
         {
           a: string;
           b?: string | undefined;
+        }
+      >
+    >;
+  });
+
+  test("nullish", () => {
+    const schema = c.string().nullish();
+    expect(() => schema.parse("hello")).not.toThrow();
+    expect(() => schema.parse(null)).not.toThrow();
+    expect(() => schema.parse(undefined)).not.toThrow();
+    expect(() => schema.parse(42)).toThrow();
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<Equal<SchemaType, string | null | undefined>>;
+  });
+
+  test("nullish alt syntax", () => {
+    const schema = c.nullish(c.string());
+    expect(() => schema.parse("hello")).not.toThrow();
+    expect(() => schema.parse(null)).not.toThrow();
+    expect(() => schema.parse(undefined)).not.toThrow();
+    expect(() => schema.parse(42)).toThrow();
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<Equal<SchemaType, string | null | undefined>>;
+  });
+
+  test("nullish fields", () => {
+    const schema = c.object({
+      a: c.string(),
+      b: c.string().nullish(),
+    });
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<
+      Equal<
+        SchemaType,
+        {
+          a: string;
+          b?: string | null | undefined;
         }
       >
     >;
