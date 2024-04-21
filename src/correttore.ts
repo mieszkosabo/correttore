@@ -82,13 +82,17 @@ type GetChainableValidators<
     : never;
 };
 
-const doesExtend = (A: string, B: string) => {
+const doesExtend = (A: string, B: string): boolean => {
   if (A === B) {
     return true;
   }
 
   if (B === "any") {
     return true;
+  }
+
+  if (A.startsWith("array<") && B.startsWith("array<")) {
+    return doesExtend(A.slice(6, A.length - 1), B.slice(6, B.length - 1));
   }
 
   return false;
@@ -111,7 +115,7 @@ const createParserProxy = (
   outputType: string,
 ): any => {
   return new Proxy(
-    {},
+    { $outputType: outputType },
     {
       get(_target, key) {
         if (key === "parse") {
@@ -124,10 +128,13 @@ const createParserProxy = (
             // return the result of the last one
             return validatorsChain[validatorsChain.length - 1].parse(arg);
           };
+        } else if (key === "$outputType") {
+          return outputType;
         }
-        const applicableValidators = validators.filter((v) =>
-          doesExtend(outputType, v().$inputType),
-        );
+        const applicableValidators = validators.filter((v) => {
+          return doesExtend(outputType, v().$inputType);
+        });
+
         const validatorIdx = applicableValidators.findIndex(
           (v) => v().name === key,
         );
@@ -138,7 +145,7 @@ const createParserProxy = (
           if (isNonCallable) {
             const validator = applicableValidators[validatorIdx]();
             const chain = validator.processChain
-              ? validator.processChain(validatorsChain.at(-1) ?? null)
+              ? validator.processChain(validatorsChain ?? null)
               : validatorsChain;
 
             return createParserProxy(
@@ -153,7 +160,7 @@ const createParserProxy = (
             return (args: any) => {
               const validator = applicableValidators[validatorIdx](args);
               const chain = validator.processChain
-                ? validator.processChain(validatorsChain.at(-1) ?? null)
+                ? validator.processChain(validatorsChain ?? null)
                 : validatorsChain;
 
               return createParserProxy(
@@ -203,7 +210,11 @@ export const initCorrettore = <
             return createParserProxy(
               validators,
               [applicableValidators[validatorIdx]!(args)],
-              applicableValidators[validatorIdx]!().$outputType,
+
+              callIfFun(
+                applicableValidators[validatorIdx](args).$outputType,
+                "root",
+              ),
             );
           };
         }
