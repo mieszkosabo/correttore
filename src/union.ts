@@ -22,9 +22,9 @@ export const or = <T1, T2>(innerValidator: Validator<T1, any>) => {
     name: "or" as const,
     $inputType: "any" as unknown as T1 | T2,
     $outputType: "any" as unknown as OrSchema,
-    processChain: (chain: Validator<T2, any> | null) => {
+    processChain: (chain: Validator<T2, any>[] | null) => {
       if (chain !== null) {
-        ctx.chain = chain;
+        ctx.chain = chain.at(-1)!;
       }
       return [];
     },

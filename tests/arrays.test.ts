@@ -1,16 +1,18 @@
 import { describe, expect, test } from "vitest";
-import { initCorrettore, min, string, arrays, Infer } from "../src";
+import { initCorrettore, min, string, arrays, Infer, number } from "../src";
 import { Equal, Expect } from "./helpers.types";
 
 describe("arrays", () => {
   const c = initCorrettore([
     arrays.array,
+    number,
     string,
     min,
     arrays.nonEmpty,
     arrays.min,
     arrays.max,
     arrays.length,
+    arrays.element,
   ]);
 
   test("arrays", () => {
@@ -75,5 +77,37 @@ describe("arrays", () => {
     const schema = c.string().array();
     type SchemaType = Infer<typeof schema>;
     type _test = Expect<Equal<SchemaType, string[]>>;
+  });
+
+  test("element", () => {
+    const schema = c.string().min(3).array().element;
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<Equal<SchemaType, string>>;
+    expect(schema.parse("hello")).toBe("hello");
+    expect(() => schema.parse("ui")).toThrow();
+  });
+
+  test("element alt syntax", () => {
+    const schema = c.array(c.string().min(3)).element;
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<Equal<SchemaType, string>>;
+    expect(schema.parse("hello")).toBe("hello");
+    expect(() => schema.parse("ui")).toThrow();
+  });
+
+  test("element after other array methods", () => {
+    const schema = c.array(c.string().min(3)).nonEmpty().min(5).max(10).element;
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<Equal<SchemaType, string>>;
+    expect(schema.parse("hello")).toBe("hello");
+    expect(() => schema.parse("ui")).toThrow();
+  });
+
+  test("element after other array methods alt syntax", () => {
+    const schema = c.string().min(3).array().nonEmpty().min(5).max(10).element;
+    type SchemaType = Infer<typeof schema>;
+    type _test = Expect<Equal<SchemaType, string>>;
+    expect(schema.parse("hello")).toBe("hello");
+    expect(() => schema.parse("ui")).toThrow();
   });
 });

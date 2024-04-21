@@ -18,9 +18,9 @@ export const nullable = (innerValidator?: Validator<any, any>) => {
     name: "nullable" as const,
     $inputType: "any" as unknown as any,
     $outputType: "any" as unknown as Nullable,
-    processChain: (chain: Validator<any, any> | null) => {
+    processChain: (chain: Validator<any, any>[] | null) => {
       if (chain !== null) {
-        ctx.chain = chain;
+        ctx.chain = chain.at(-1)!;
       }
       return [];
     },
@@ -57,9 +57,9 @@ export const optional = (innerValidator?: Validator<any, any>) => {
     name: "optional" as const,
     $inputType: "any" as unknown as any,
     $outputType: "any" as unknown as Optional,
-    processChain: (chain: Validator<any, any> | null) => {
+    processChain: (chain: Validator<any, any>[] | null) => {
       if (chain !== null) {
-        ctx.chain = chain;
+        ctx.chain = chain.at(-1)!;
       }
       return [];
     },
@@ -96,9 +96,9 @@ export const nullish = (innerValidator?: Validator<any, any>) => {
     name: "nullish" as const,
     $inputType: "any" as unknown as any,
     $outputType: "any" as unknown as Nullish,
-    processChain: (chain: Validator<any, any> | null) => {
+    processChain: (chain: Validator<any, any>[] | null) => {
       if (chain !== null) {
-        ctx.chain = chain;
+        ctx.chain = chain.at(-1)!;
       }
       return [];
     },

@@ -61,9 +61,9 @@ export const passthrough = () => {
     name: "passthrough" as const,
     $inputType: "object" as unknown as any,
     $outputType: "object" as unknown as Identity,
-    processChain: (chain: Validator<any, any> | null) => {
+    processChain: (chain: Validator<any, any>[] | null) => {
       if (chain !== null) {
-        ctx.chain = chain;
+        ctx.chain = chain.at(-1)!;
       }
       return [];
     },
@@ -92,9 +92,9 @@ export const strict = () => {
     name: "strict" as const,
     $inputType: "object" as unknown as any,
     $outputType: "object" as unknown as Identity,
-    processChain: (chain: Validator<any, any> | null) => {
+    processChain: (chain: Validator<any, any>[] | null) => {
       if (chain !== null) {
-        ctx.chain = chain;
+        ctx.chain = chain.at(-1)!;
       }
       return [];
     },
