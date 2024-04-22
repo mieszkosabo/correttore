@@ -11,3 +11,4 @@ export * from "./other";
 export * as coerce from "./coerce";
 export * from "./union";
 export * from "./literal";
+export * as dates from "./dates";
