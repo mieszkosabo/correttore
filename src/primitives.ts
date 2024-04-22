@@ -43,7 +43,13 @@ export const date = () => ({
   $inputType: "root" as const,
   $outputType: "Date" as unknown as Date,
   parse: (arg: unknown) => {
-    if (!(arg instanceof Date)) throw new Error(`${arg} is not a Date.`);
+    if (!(arg instanceof Date)) {
+      throw new Error(`${arg} is not a Date.`);
+    }
+    if (arg instanceof Date && isNaN(arg.getTime())) {
+      throw new Error(`${arg} is an invalid Date.`);
+    }
+
     return arg;
   },
 });
